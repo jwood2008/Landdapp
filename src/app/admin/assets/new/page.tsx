@@ -16,7 +16,7 @@ export default async function NewAssetPage() {
     .order('email')
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <Link
           href="/admin"
@@ -26,7 +26,7 @@ export default async function NewAssetPage() {
           Back to admin
         </Link>
         <h1 className="mt-2 text-2xl font-bold tracking-tight">Create New Asset</h1>
-        <p className="text-muted-foreground">Register a new tokenized asset on the platform</p>
+        <p className="text-base text-muted-foreground">Register a new tokenized asset on the platform</p>
       </div>
       <CreateAssetForm
         issuers={(issuers ?? []) as Array<{ id: string; email: string; full_name: string | null; role: string }>}

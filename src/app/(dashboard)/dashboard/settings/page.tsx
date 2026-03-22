@@ -29,9 +29,19 @@ export default async function SettingsPage() {
     created_at: string
   }[] | null) ?? []
 
+  // For issuers, fetch their LLC/token wallets from assets they own
+  let assetWallets: { asset_name: string; token_symbol: string; issuer_wallet: string }[] = []
+  if (role === 'issuer') {
+    const { data: assets } = await supabase
+      .from('assets')
+      .select('asset_name, token_symbol, issuer_wallet')
+      .eq('owner_id', user!.id)
+    assetWallets = (assets ?? []) as typeof assetWallets
+  }
+
   return (
-    <div className="max-w-2xl">
-      <div className="mb-6">
+    <div className="max-w-3xl">
+      <div className="mb-8">
         <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
         <p className="text-muted-foreground">Manage your account, appearance, and wallet connections</p>
       </div>
@@ -42,6 +52,7 @@ export default async function SettingsPage() {
         email={profile?.email ?? user!.email!}
         wallets={wallets}
         role={role}
+        assetWallets={assetWallets}
       />
     </div>
   )

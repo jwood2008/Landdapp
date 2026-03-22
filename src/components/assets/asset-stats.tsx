@@ -70,9 +70,9 @@ export function AssetStats({ asset, holding, circulatingSupply = 0 }: AssetStats
               </CardTitle>
               <Icon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-xl font-bold tabular-nums">{stat.value}</div>
-              <p className="mt-1 text-xs text-muted-foreground">{stat.sub}</p>
+            <CardContent className="p-6 pt-0">
+              <div className="text-2xl font-bold tabular-nums">{stat.value}</div>
+              <p className="mt-1 text-sm text-muted-foreground">{stat.sub}</p>
             </CardContent>
           </Card>
         )

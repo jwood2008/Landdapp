@@ -90,7 +90,7 @@ export function DistributionHistory({ distributions }: DistributionHistoryProps)
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
                     {d.myPayment ? (
-                      <span className="font-medium text-green-600 dark:text-green-400">
+                      <span className="font-medium text-success">
                         {formatUSD(d.myPayment.amount)}
                       </span>
                     ) : (

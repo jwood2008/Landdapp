@@ -3,26 +3,13 @@ import { requireAuth } from '@/lib/api-auth'
 import { buildPaymentAmount } from '@/lib/xrpl/amount'
 
 /**
- * Creates a Xaman payload for an XRPL OfferCreate transaction.
- * Both buy and sell orders go on the DEX as limit orders.
+ * Creates a Xaman payload for buy orders (OfferCreate on DEX).
  *
- * - SELL: "I have tokens, I want XRP/RLUSD" → sits on DEX until a buyer matches
- * - BUY: "I have XRP/RLUSD, I want tokens" → sits on DEX until a seller matches
+ * SELL: No XRPL transaction needed. Sell orders are recorded in the DB only.
+ *       Tokens stay in the seller's wallet until a buyer matches the order.
+ *       At settlement time, the platform handles the swap.
  *
- * When offers cross (buy price >= sell price), the XRPL DEX fills them instantly.
- *
- * Body: {
- *   orderId: string,
- *   investorAddress: string,
- *   side: 'buy' | 'sell',
- *   tokenAmount: number,
- *   pricePerToken: number,
- *   tokenSymbol: string,
- *   issuerWallet: string,
- *   currency: string,  // RLUSD | XRP
- * }
- *
- * Returns: { uuid, qrUrl, deepLink }
+ * BUY: Signs an OfferCreate on the XRPL DEX (legacy).
  */
 export async function POST(req: Request) {
   const auth = await requireAuth()
@@ -48,6 +35,19 @@ export async function POST(req: Request) {
       )
     }
 
+    if (side === 'sell') {
+      // SELL: No XRPL transaction. Tokens remain in the seller's wallet.
+      // The order record was already created by the marketplace orders API.
+      // Tokens only transfer when a buyer matches via secondary-buy.
+      console.log(`[create-offer] Sell order listed: ${tokenAmount} ${tokenSymbol} from ${investorAddress.slice(0, 8)}... at $${pricePerToken}/token`)
+
+      return NextResponse.json({
+        listed: true,
+        message: `${tokenAmount} ${tokenSymbol} listed for sale at $${pricePerToken} per token.`,
+      })
+    }
+
+    // BUY: OfferCreate on DEX (legacy path — prefer primary-buy)
     const apiKey = process.env.XUMM_APIKEY
     const apiSecret = process.env.XUMM_APISECRET
 
@@ -55,41 +55,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Xaman API not configured' }, { status: 500 })
     }
 
-    const totalPayment = tokenAmount * pricePerToken
-    const payCurrency = currency ?? 'RLUSD'
-
-    // Build XRPL amounts
-    const tokenAmount_xrpl = buildPaymentAmount(tokenSymbol, String(tokenAmount), issuerWallet)
-    const paymentAmount_xrpl = buildPaymentAmount(payCurrency, String(totalPayment), issuerWallet)
-
-    // OfferCreate semantics:
-    // TakerPays = what the taker gives us (what we receive)
-    // TakerGets = what we give the taker (what we send)
-    let takerPays: unknown
-    let takerGets: unknown
-
-    if (side === 'buy') {
-      // Buying tokens: we send payment, we receive tokens
-      takerPays = tokenAmount_xrpl    // we receive tokens
-      takerGets = paymentAmount_xrpl   // we send XRP/RLUSD
-    } else {
-      // Selling tokens: we send tokens, we receive payment
-      takerPays = paymentAmount_xrpl   // we receive XRP/RLUSD
-      takerGets = tokenAmount_xrpl     // we send tokens
-    }
-
     const truncAddr = `${investorAddress.slice(0, 8)}...${investorAddress.slice(-6)}`
-    const instruction = side === 'buy'
-      ? `Buy ${tokenAmount} ${tokenSymbol} at $${pricePerToken} each (${payCurrency})`
-      : `Sell ${tokenAmount} ${tokenSymbol} at $${pricePerToken} each (${payCurrency})`
+    const payCurrency = currency ?? 'XRP'
+    const totalPayment = tokenAmount * pricePerToken
+    const tokenAmountXrpl = buildPaymentAmount(tokenSymbol, String(tokenAmount), issuerWallet)
+    const paymentAmountXrpl = buildPaymentAmount(payCurrency, String(totalPayment), issuerWallet)
+
+    const txjson = {
+      TransactionType: 'OfferCreate',
+      Account: investorAddress,
+      TakerPays: tokenAmountXrpl,
+      TakerGets: paymentAmountXrpl,
+    }
+    const instruction = `Buy ${tokenAmount} ${tokenSymbol} at $${pricePerToken} each`
 
     const payload = {
-      txjson: {
-        TransactionType: 'OfferCreate',
-        Account: investorAddress,
-        TakerPays: takerPays,
-        TakerGets: takerGets,
-      },
+      txjson,
       options: {
         submit: true,
         expire: 300,

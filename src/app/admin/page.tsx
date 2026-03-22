@@ -30,10 +30,10 @@ export default async function AdminPage() {
   ])
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Admin Panel</h1>
-        <p className="text-muted-foreground">Manage the permission domain — assets, investors, and distributions</p>
+        <p className="text-base text-muted-foreground">Manage the permission domain — assets, investors, and distributions</p>
       </div>
 
       <PendingAccounts

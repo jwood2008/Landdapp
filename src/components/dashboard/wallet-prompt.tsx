@@ -76,11 +76,11 @@ export function WalletPrompt({ userId }: { userId: string }) {
           <Wallet className="h-6 w-6 text-primary" />
         </div>
         <CardTitle>Connect your wallet</CardTitle>
-        <CardDescription>
+        <CardDescription className="text-base">
           Link your XRPL wallet to view your tokenized asset holdings and distributions.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="p-8 space-y-5">
         {error && <p className="text-sm text-destructive text-center">{error}</p>}
 
         {showXaman ? (

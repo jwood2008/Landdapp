@@ -28,7 +28,7 @@ export default async function IssueTokensPage() {
     .select('asset_id, wallet_address, token_balance, ownership_percent')
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <Link
           href="/admin"
@@ -41,7 +41,7 @@ export default async function IssueTokensPage() {
           Back to admin
         </Link>
         <h1 className="mt-2 text-2xl font-bold tracking-tight">Issue Tokens</h1>
-        <p className="text-muted-foreground">
+        <p className="text-base text-muted-foreground">
           Send tokens to approved investors via Xaman-signed XRPL Payment transactions
         </p>
       </div>

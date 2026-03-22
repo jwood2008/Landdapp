@@ -54,9 +54,9 @@ interface Props {
 }
 
 const SEVERITY_STYLES = {
-  info: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-  warning: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
-  critical: 'bg-red-500/10 text-red-500 border-red-500/20',
+  info: 'bg-status-info text-info border-primary/20',
+  warning: 'bg-status-warning text-warning border-warning/20',
+  critical: 'bg-status-danger text-destructive border-destructive/20',
 }
 
 const SEVERITY_ICONS = {
@@ -213,10 +213,10 @@ export function NavUpdateForm({ asset, onUpdated }: Props) {
 
   const scoreColor =
     (validation?.integrity.score ?? 0) >= 75
-      ? 'text-green-500'
+      ? 'text-success'
       : (validation?.integrity.score ?? 0) >= 50
-        ? 'text-amber-500'
-        : 'text-red-500'
+        ? 'text-warning'
+        : 'text-destructive'
 
   const ScoreIcon =
     (validation?.integrity.score ?? 0) >= 75
@@ -318,10 +318,10 @@ export function NavUpdateForm({ asset, onUpdated }: Props) {
               <div
                 className={`flex items-center gap-3 rounded-lg border p-4 ${
                   validation.integrity.status === 'passed'
-                    ? 'border-green-500/20 bg-green-500/5'
+                    ? 'border-success/20 bg-success/5'
                     : validation.integrity.status === 'flagged'
-                      ? 'border-amber-500/20 bg-amber-500/5'
-                      : 'border-red-500/20 bg-red-500/5'
+                      ? 'border-warning/20 bg-status-warning'
+                      : 'border-destructive/20 bg-destructive/5'
                 }`}
               >
                 <ScoreIcon className={`h-8 w-8 ${scoreColor}`} />
@@ -380,7 +380,7 @@ export function NavUpdateForm({ asset, onUpdated }: Props) {
                 )}
                 <div className="rounded-md border border-border p-2.5">
                   <p className="text-xs text-muted-foreground">Signature</p>
-                  <p className={`text-sm font-medium mt-0.5 ${validation.analysis.signature_detected ? 'text-green-500' : 'text-red-500'}`}>
+                  <p className={`text-sm font-medium mt-0.5 ${validation.analysis.signature_detected ? 'text-success' : 'text-destructive'}`}>
                     {validation.analysis.signature_detected
                       ? validation.analysis.signature_signer_name ?? 'Detected'
                       : 'Not found'}
@@ -482,11 +482,11 @@ export function NavUpdateForm({ asset, onUpdated }: Props) {
                     <p className="font-bold mt-0.5">${valNum.toLocaleString()}</p>
                   </div>
                   <div
-                    className={`rounded-md p-3 ${change >= 0 ? 'bg-green-500/10' : 'bg-red-500/10'}`}
+                    className={`rounded-md p-3 ${change >= 0 ? 'bg-status-success' : 'bg-status-danger'}`}
                   >
                     <p className="text-xs text-muted-foreground">Change</p>
                     <p
-                      className={`font-bold mt-0.5 ${change >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}
+                      className={`font-bold mt-0.5 ${change >= 0 ? 'text-success' : 'text-destructive'}`}
                     >
                       {change >= 0 ? '+' : ''}
                       {change.toFixed(2)}%
@@ -500,7 +500,7 @@ export function NavUpdateForm({ asset, onUpdated }: Props) {
                   <p className="text-xs font-medium text-primary">Computed NAV per Token</p>
                   <p className="font-mono font-bold text-lg">${navPerToken.toFixed(6)}</p>
                   <p className="text-xs text-muted-foreground">
-                    {valNum.toLocaleString()} ÷ {Number(asset.token_supply).toLocaleString()}{' '}
+                    {valNum.toLocaleString()} &divide; {Number(asset.token_supply).toLocaleString()}{' '}
                     {asset.token_symbol} tokens
                   </p>
                 </div>
@@ -516,7 +516,7 @@ export function NavUpdateForm({ asset, onUpdated }: Props) {
           )}
 
           {saved && (
-            <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+            <div className="flex items-center gap-2 text-sm text-success">
               <CheckCircle className="h-4 w-4 shrink-0" />
               Valuation updated — NAV per token recalculated and logged with verified appraisal
             </div>
@@ -543,7 +543,7 @@ export function NavUpdateForm({ asset, onUpdated }: Props) {
           )}
 
           {validation?.integrity.status === 'rejected' && (
-            <div className="flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/5 p-3 text-sm text-red-500">
+            <div className="flex items-center gap-2 rounded-lg border border-destructive/20 bg-destructive/5 p-3 text-sm text-destructive">
               <ShieldX className="h-4 w-4 shrink-0" />
               Document failed integrity checks. Upload a valid appraisal to proceed.
             </div>

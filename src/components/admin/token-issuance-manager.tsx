@@ -270,13 +270,13 @@ export function TokenIssuanceManager({ assets, approvals, holdings }: Props) {
 
             {/* Success / Error */}
             {success && (
-              <div className="flex items-center gap-2 rounded-lg border border-green-500/20 bg-green-500/5 p-4 text-sm text-green-600 dark:text-green-400">
+              <div className="flex items-center gap-2 rounded-lg border border-success/20 bg-success/5 p-4 text-sm text-success">
                 <CheckCircle className="h-4 w-4 shrink-0" />
                 {success}
               </div>
             )}
             {error && (
-              <div className="flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/5 p-4 text-sm text-destructive">
+              <div className="flex items-center gap-2 rounded-lg border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
                 <AlertCircle className="h-4 w-4 shrink-0" />
                 {error}
               </div>
@@ -383,7 +383,7 @@ export function TokenIssuanceManager({ assets, approvals, holdings }: Props) {
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge className="text-xs bg-green-500/10 text-green-500">
+                        <Badge className="text-xs bg-status-success text-success">
                           approved
                         </Badge>
                         {isSelected && <ArrowRight className="h-3.5 w-3.5 text-primary" />}

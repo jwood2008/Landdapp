@@ -75,10 +75,10 @@ export default async function AdminInvestorsPage() {
   })
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Platform Investors</h1>
-        <p className="text-muted-foreground">
+        <p className="text-base text-muted-foreground">
           Manage the permission domain — approve investors, verify KYC/AML, and authorize token access
         </p>
       </div>

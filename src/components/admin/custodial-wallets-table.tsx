@@ -129,7 +129,7 @@ export function CustodialWalletsTable({ wallets, userMap, assetMap = {} }: Props
       <Button
         variant="ghost"
         size="sm"
-        className="h-7 text-[10px] gap-1 text-amber-600 hover:text-amber-700 hover:bg-amber-500/10"
+        className="h-7 text-xs gap-1 text-warning hover:text-warning hover:bg-status-warning"
         onClick={() => handleRevealClick(walletId)}
       >
         <Eye className="h-3 w-3" />
@@ -144,7 +144,7 @@ export function CustodialWalletsTable({ wallets, userMap, assetMap = {} }: Props
       <Dialog open={showConfirm} onOpenChange={setShowConfirm}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-amber-500">
+            <DialogTitle className="flex items-center gap-2 text-warning">
               <AlertTriangle className="h-5 w-5" />
               Reveal Private Key?
             </DialogTitle>
@@ -167,19 +167,19 @@ export function CustodialWalletsTable({ wallets, userMap, assetMap = {} }: Props
               onKeyDown={(e) => e.key === 'Enter' && handleConfirmReveal()}
               placeholder="Enter password..."
               className={cn(
-                'w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-amber-500/50',
-                passwordError ? 'border-red-500 focus:ring-red-500/50' : 'border-border'
+                'w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-warning/50',
+                passwordError ? 'border-destructive focus:ring-destructive/50' : 'border-border'
               )}
               autoFocus
             />
             {passwordError && (
-              <p className="text-xs text-red-500">Incorrect password. Please try again.</p>
+              <p className="text-xs text-destructive">Incorrect password. Please try again.</p>
             )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowConfirm(false)}>Cancel</Button>
             <Button
-              className="bg-red-600 hover:bg-red-700 text-white font-semibold gap-1.5 shadow-md"
+              className="bg-destructive hover:bg-destructive/90 text-white font-semibold gap-1.5 shadow-md"
               onClick={handleConfirmReveal}
               disabled={loading || !password}
             >
@@ -195,7 +195,7 @@ export function CustodialWalletsTable({ wallets, userMap, assetMap = {} }: Props
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <ShieldCheck className="h-5 w-5 text-green-500" />
+              <ShieldCheck className="h-5 w-5 text-success" />
               Wallet Private Key
             </DialogTitle>
             <DialogDescription>
@@ -215,7 +215,7 @@ export function CustodialWalletsTable({ wallets, userMap, assetMap = {} }: Props
                   className="h-8 w-8 p-0 shrink-0"
                   onClick={() => revealedAddress && copyToClipboard(revealedAddress, 'address')}
                 >
-                  {copied === 'address' ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copied === 'address' ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />}
                 </Button>
               </div>
             </div>
@@ -223,7 +223,7 @@ export function CustodialWalletsTable({ wallets, userMap, assetMap = {} }: Props
             <div className="space-y-1">
               <label className="text-xs font-medium text-destructive">Secret Seed (Private Key)</label>
               <div className="flex items-center gap-2">
-                <code className="flex-1 rounded-md bg-red-500/5 border border-red-500/20 px-3 py-2 text-xs font-mono break-all text-red-600 dark:text-red-400">
+                <code className="flex-1 rounded-md bg-destructive/5 border border-destructive/20 px-3 py-2 text-xs font-mono break-all text-destructive">
                   {revealedSeed}
                 </code>
                 <Button
@@ -232,10 +232,10 @@ export function CustodialWalletsTable({ wallets, userMap, assetMap = {} }: Props
                   className="h-8 w-8 p-0 shrink-0"
                   onClick={() => revealedSeed && copyToClipboard(revealedSeed, 'seed')}
                 >
-                  {copied === 'seed' ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copied === 'seed' ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />}
                 </Button>
               </div>
-              <p className="text-[10px] text-destructive/70">
+              <p className="text-xs text-destructive/70">
                 Anyone with this key has full control of this wallet. Keep it secure.
               </p>
             </div>
@@ -250,7 +250,7 @@ export function CustodialWalletsTable({ wallets, userMap, assetMap = {} }: Props
 
       {/* Global error */}
       {error && (
-        <div className="rounded-lg border border-red-500/20 bg-red-500/5 px-4 py-2 text-xs text-destructive">
+        <div className="rounded-lg border border-destructive/20 bg-destructive/5 px-4 py-2 text-xs text-destructive">
           {error}
         </div>
       )}
@@ -298,7 +298,7 @@ export function CustodialWalletsTable({ wallets, userMap, assetMap = {} }: Props
                               {asset ? `${asset.asset_name}` : (wallet.label ?? 'Token Wallet')}
                             </span>
                             {asset && (
-                              <Badge variant="outline" className="text-[10px]">{asset.token_symbol}</Badge>
+                              <Badge variant="outline" className="text-xs">{asset.token_symbol}</Badge>
                             )}
                           </div>
                         </td>
@@ -306,7 +306,7 @@ export function CustodialWalletsTable({ wallets, userMap, assetMap = {} }: Props
                           {wallet.address}
                         </td>
                         <td className="px-4 py-2.5 text-center">
-                          <Badge variant="outline" className="text-[10px] gap-1">
+                          <Badge variant="outline" className="text-xs gap-1">
                             <ShieldCheck className="h-3 w-3" />
                             {wallet.encryption_method}
                           </Badge>
@@ -377,14 +377,14 @@ export function CustodialWalletsTable({ wallets, userMap, assetMap = {} }: Props
                           {wallet.address}
                         </td>
                         <td className="px-4 py-2.5 text-center">
-                          <Badge variant="outline" className="text-[10px] gap-1">
+                          <Badge variant="outline" className="text-xs gap-1">
                             <ShieldCheck className="h-3 w-3" />
                             {wallet.encryption_method}
                           </Badge>
                         </td>
                         <td className="px-4 py-2.5 text-center">
                           {wallet.is_primary ? (
-                            <Badge className="text-[10px] bg-green-500/10 text-green-500">Yes</Badge>
+                            <Badge className="text-xs bg-status-success text-success">Yes</Badge>
                           ) : (
                             <span className="text-muted-foreground">No</span>
                           )}

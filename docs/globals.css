@@ -1,0 +1,750 @@
+@import "tailwindcss";
+
+@plugin "tailwindcss-animate";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║  Stokvel Global Theme — Apple HIG + GitHub Primer           ║
+   ╠══════════════════════════════════════════════════════════════╣
+   ║  1. @theme inline — Tailwind v4 token registration          ║
+   ║  2. :root         — Light theme (navy/blue brand)           ║
+   ║  3. .dark         — Dark theme                              ║
+   ║  4. @layer base   — Reset, defaults, a11y                   ║
+   ║  5. Utilities     — Animations, scrollbars, mobile density  ║
+   ║  6. Landing page  — Hero, sections, gradient text, glows    ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* Core palette */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-card-inset: var(--card-inset);
+  --color-card-inset-foreground: var(--card-inset-foreground);
+  --color-card-accent: var(--card-accent);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Text */
+  --color-foreground-secondary: var(--foreground-secondary);
+
+  /* Status (solid) */
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+
+  /* Status badges (soft) */
+  --color-status-success: var(--status-success);
+  --color-status-success-foreground: var(--status-success-foreground);
+  --color-status-warning: var(--status-warning);
+  --color-status-warning-foreground: var(--status-warning-foreground);
+  --color-status-info: var(--status-info);
+  --color-status-info-foreground: var(--status-info-foreground);
+  --color-status-danger: var(--status-danger);
+  --color-status-danger-foreground: var(--status-danger-foreground);
+
+  /* Interactive */
+  --color-interactive-hover: var(--interactive-hover);
+  --color-interactive-active: var(--interactive-active);
+
+  /* Focus */
+  --color-focus-visible: var(--focus-visible);
+
+  /* Charts */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* Radius scale */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+}
+
+/* ─── Light Theme ─────────────────────────────────────────────── */
+:root {
+  --background: #FFFFFF;
+  --foreground: #0F172A;
+
+  --card: #FEFEFE;
+  --card-foreground: #0F172A;
+  --card-inset: #F8FAFC;
+  --card-inset-foreground: #334155;
+  --card-accent: #DBEAFE;
+
+  --popover: #FFFFFF;
+  --popover-foreground: #0F172A;
+
+  --primary: #0A3161;
+  --primary-foreground: #FFFFFF;
+  --primary-hover: #2563EB;
+
+  --secondary: #EFF6FF;
+  --secondary-foreground: #0F172A;
+
+  --muted: #F1F5F9;
+  --muted-foreground: #64748B;
+
+  --accent: #EFF6FF;
+  --accent-foreground: #0F172A;
+
+  --destructive: #DC2626;
+  --destructive-foreground: #FFFFFF;
+
+  --border: #DBEAFE;
+  --input: #DBEAFE;
+  --ring: #0A3161;
+
+  --foreground-secondary: #475569;
+
+  /* Status (solid) */
+  --success: #16A34A;
+  --success-foreground: #FFFFFF;
+  --warning: #D97706;
+  --warning-foreground: #FFFFFF;
+  --info: #2563EB;
+
+  /* Status badges (soft) */
+  --status-success: #DCFCE7;
+  --status-success-foreground: #166534;
+  --status-warning: #FEF3C7;
+  --status-warning-foreground: #92400E;
+  --status-info: #DBEAFE;
+  --status-info-foreground: #1E40AF;
+  --status-danger: #FEE2E2;
+  --status-danger-foreground: #991B1B;
+
+  /* Interactive */
+  --interactive-hover: rgba(10, 49, 97, 0.04);
+  --interactive-active: rgba(10, 49, 97, 0.08);
+
+  /* Focus */
+  --focus-visible: #2563EB;
+
+  /* Gradient */
+  --gradient-from: #0A3161;
+  --gradient-to: #2563EB;
+
+  /* Utility */
+  --logo-primary: #0A3161;
+
+  /* Radius */
+  --radius: 0.625rem;
+
+  /* Charts */
+  --chart-1: #0A3161;
+  --chart-2: #2563EB;
+  --chart-3: #F59E0B;
+  --chart-4: #3B82F6;
+  --chart-5: #7C3AED;
+
+}
+
+/* ─── Dark Theme ──────────────────────────────────────────────── */
+.dark {
+  --background: #0F172A;
+  --foreground: #E2E8F0;
+
+  --card: #1E293B;
+  --card-foreground: #E2E8F0;
+  --card-inset: #0F172A;
+  --card-inset-foreground: #94A3B8;
+  --card-accent: #1E3A5F;
+
+  --popover: #1E293B;
+  --popover-foreground: #E2E8F0;
+
+  --primary: #60A5FA;
+  --primary-foreground: #0F172A;
+  --primary-hover: #93C5FD;
+
+  --secondary: #1E293B;
+  --secondary-foreground: #93C5FD;
+
+  --muted: #334155;
+  --muted-foreground: #94A3B8;
+
+  --accent: #1E293B;
+  --accent-foreground: #93C5FD;
+
+  --destructive: #F87171;
+  --destructive-foreground: #0F172A;
+
+  --border: rgba(96, 165, 250, 0.2);
+  --input: rgba(96, 165, 250, 0.25);
+  --ring: #60A5FA;
+
+  --foreground-secondary: #CBD5E1;
+
+  /* Status (solid) */
+  --success: #4ADE80;
+  --success-foreground: #052E16;
+  --warning: #FBBF24;
+  --warning-foreground: #451A03;
+  --info: #60A5FA;
+
+  /* Status badges (soft) — translucent */
+  --status-success: rgba(74, 222, 128, 0.15);
+  --status-success-foreground: #86EFAC;
+  --status-warning: rgba(251, 191, 36, 0.15);
+  --status-warning-foreground: #FCD34D;
+  --status-info: rgba(96, 165, 250, 0.15);
+  --status-info-foreground: #93C5FD;
+  --status-danger: rgba(248, 113, 113, 0.15);
+  --status-danger-foreground: #FCA5A5;
+
+  /* Interactive */
+  --interactive-hover: rgba(96, 165, 250, 0.06);
+  --interactive-active: rgba(96, 165, 250, 0.12);
+
+  /* Focus */
+  --focus-visible: #60A5FA;
+
+  /* Gradient */
+  --gradient-from: #60A5FA;
+  --gradient-to: #93C5FD;
+
+  /* Utility */
+  --logo-primary: #60A5FA;
+
+  /* Charts */
+  --chart-1: #60A5FA;
+  --chart-2: #93C5FD;
+  --chart-3: #FBBF24;
+  --chart-4: #4ADE80;
+  --chart-5: #A78BFA;
+
+}
+
+/* ─── Base Layer ──────────────────────────────────────────────── */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  * {
+    @apply border-border outline-none;
+  }
+
+  body {
+    @apply bg-background text-foreground min-h-screen antialiased;
+    font-feature-settings: "liga" 1, "calt" 1;
+    line-height: 1.6;
+    letter-spacing: -0.011em;
+    /* Safe area insets for iOS PWA (notch sides — bottom handled by BottomNav) */
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  /* Prevent iOS zoom on input focus */
+  input, select, textarea {
+    font-size: 16px;
+  }
+
+  @media (min-width: 768px) {
+    input, select, textarea {
+      font-size: inherit;
+    }
+  }
+}
+
+/* ─── Accessibility ───────────────────────────────────────────── */
+@media (prefers-contrast: high) {
+  :root {
+    --border: #94A3B8;
+    --muted-foreground: #334155;
+    --focus-visible: #000000;
+  }
+  .dark {
+    --border: #CBD5E1;
+    --muted-foreground: #CBD5E1;
+    --focus-visible: #FFFFFF;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Screen-reader only */
+.sr-only,
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Focusable variant for skip-to-content links */
+.sr-only-focusable:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  clip: auto;
+  white-space: normal;
+}
+
+/* ─── Utility Classes ─────────────────────────────────────────── */
+
+/* Subtle pulse for urgent stats — theme-aware via color-mix */
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 0%, transparent);
+  }
+  50% {
+    opacity: 0.95;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 15%, transparent);
+  }
+}
+
+/* Fade-in entry */
+.animate-in {
+  animation: animate-in 0.3s ease-out;
+}
+
+@keyframes animate-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Auth buttons — brand gradient */
+.auth-button {
+  @apply relative overflow-hidden rounded-xl border border-border bg-card px-4 py-3
+         text-sm font-medium text-foreground
+         transition-all duration-200
+         hover:border-primary/30 hover:shadow-md
+         focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none;
+}
+
+/* Auth page radial glow backgrounds — theme-aware via color-mix */
+.auth-glow-primary {
+  background: radial-gradient(ellipse at 30% 20%, color-mix(in srgb, var(--gradient-from) 50%, transparent) 0%, transparent 50%);
+}
+
+.auth-glow-secondary {
+  background: radial-gradient(ellipse at 70% 80%, color-mix(in srgb, var(--gradient-to) 30%, transparent) 0%, transparent 40%);
+}
+
+.auth-glow-center {
+  background: radial-gradient(ellipse at 50% 30%, color-mix(in srgb, var(--gradient-from) 50%, transparent) 0%, transparent 50%);
+}
+
+.auth-glow-top {
+  background: radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--gradient-from) 40%, transparent) 0%, transparent 60%);
+}
+
+/* Status badge glow emphasis */
+.badge-glow-green {
+  box-shadow: 0 0 8px rgba(22, 163, 74, 0.3);
+}
+
+.badge-glow-amber {
+  box-shadow: 0 0 8px rgba(217, 119, 6, 0.3);
+}
+
+.badge-glow-red {
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.3);
+}
+
+/* Stagger animation for card lists (up to 10 items) */
+.stagger-item {
+  opacity: 0;
+  animation: stagger-in 0.4s ease-out forwards;
+  animation-delay: var(--stagger-delay, 0ms);
+}
+
+.stagger-item:nth-child(1) { --stagger-delay: 0ms; }
+.stagger-item:nth-child(2) { --stagger-delay: 50ms; }
+.stagger-item:nth-child(3) { --stagger-delay: 100ms; }
+.stagger-item:nth-child(4) { --stagger-delay: 150ms; }
+.stagger-item:nth-child(5) { --stagger-delay: 200ms; }
+.stagger-item:nth-child(6) { --stagger-delay: 250ms; }
+.stagger-item:nth-child(7) { --stagger-delay: 300ms; }
+.stagger-item:nth-child(8) { --stagger-delay: 350ms; }
+.stagger-item:nth-child(9) { --stagger-delay: 400ms; }
+.stagger-item:nth-child(10) { --stagger-delay: 450ms; }
+
+@keyframes stagger-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stagger-item {
+    opacity: 1;
+    animation: none;
+  }
+}
+
+/* Hover lift for cards and buttons — Primer-like depth */
+.hover-lift {
+  transition: all 0.15s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+.hover-lift:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+.dark .hover-lift:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+.dark .hover-lift:active {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+
+/* Focus ring using --focus-visible token */
+.focus-ring {
+  @apply ring-2 ring-offset-2 ring-offset-background transition-shadow;
+  --tw-ring-color: var(--focus-visible);
+}
+
+/* Disabled state */
+.disabled {
+  @apply opacity-60 cursor-not-allowed pointer-events-none;
+}
+
+/* Shimmer skeleton loading */
+.animate-shimmer {
+  background: linear-gradient(90deg, var(--muted) 0%, var(--card) 50%, var(--muted) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.dark .animate-shimmer {
+  background: linear-gradient(90deg, #1E293B 25%, #334155 50%, #1E293B 75%);
+  background-size: 200% 100%;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Truncate long text */
+.truncate-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Prose for long-form content (HIG-inspired) */
+.prose {
+  @apply max-w-prose mx-auto;
+  color: var(--foreground);
+  line-height: 1.75;
+  font-size: 1.125rem;
+}
+.prose p + p {
+  margin-top: 1.5em;
+}
+.prose h2 {
+  @apply text-xl font-semibold mt-8 mb-4;
+}
+.prose h3 {
+  @apply text-lg font-semibold mt-6 mb-3;
+}
+.prose p {
+  @apply mb-4;
+}
+.prose ul, .prose ol {
+  @apply mb-4 pl-6;
+}
+.prose li {
+  @apply mb-2;
+}
+.prose strong {
+  @apply font-semibold;
+}
+.prose a {
+  @apply text-primary underline underline-offset-2;
+}
+.prose a:hover {
+  opacity: 0.8;
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────────── */
+
+/* Scrollbar hide */
+.no-scrollbar::-webkit-scrollbar,
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar,
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Themed scrollbar — WebKit */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--muted);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--muted) transparent;
+}
+
+/* Ring offset background utility */
+.ring-offset-background {
+  --tw-ring-offset-color: var(--background);
+}
+
+/* ─── Landing Page Utilities ─────────────────────────────────── */
+
+/* Gradient text — brand navy→blue */
+.gradient-text {
+  background: linear-gradient(135deg, var(--gradient-from), var(--gradient-to));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Brand gradient button */
+.gradient-button {
+  background: linear-gradient(135deg, var(--gradient-from), var(--gradient-to));
+  color: white;
+  transition: opacity 0.2s, transform 0.15s;
+}
+.gradient-button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* Hero ambient glow — large diffuse navy/blue */
+.hero-glow {
+  position: relative;
+}
+.hero-glow::before {
+  content: "";
+  position: absolute;
+  top: -20%;
+  left: 10%;
+  width: 50%;
+  height: 60%;
+  background: radial-gradient(ellipse, color-mix(in srgb, var(--gradient-from) 15%, transparent), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+.hero-glow::after {
+  content: "";
+  position: absolute;
+  bottom: -10%;
+  right: 5%;
+  width: 40%;
+  height: 50%;
+  background: radial-gradient(ellipse, color-mix(in srgb, var(--gradient-to) 12%, transparent), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Section — consistent vertical rhythm (Apple HIG spacious feel) */
+.section-lg {
+  padding-top: 6rem;
+  padding-bottom: 6rem;
+}
+.section-xl {
+  padding-top: 8rem;
+  padding-bottom: 8rem;
+}
+
+@media (max-width: 768px) {
+  .section-lg {
+    padding-top: 4rem;
+    padding-bottom: 4rem;
+  }
+  .section-xl {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+  }
+}
+
+/* Glass card — frosted glass for landing page feature cards */
+.glass-card {
+  background: color-mix(in srgb, var(--card) 80%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+}
+
+/* Scroll-triggered fade-in — use with IntersectionObserver or CSS */
+.fade-in-up {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+.fade-in-up.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Floating animation — gentle bob for hero illustrations */
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+/* Gradient border — for premium feature cards */
+.gradient-border {
+  position: relative;
+  border: none;
+}
+.gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, var(--gradient-from), var(--gradient-to));
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+  pointer-events: none;
+}
+
+/* Trust / logo bar — muted row of partner logos */
+.trust-bar img,
+.trust-bar svg {
+  filter: grayscale(100%) opacity(0.5);
+  transition: filter 0.2s;
+}
+.trust-bar img:hover,
+.trust-bar svg:hover {
+  filter: grayscale(0%) opacity(1);
+}
+
+/* Stat / metric large number */
+.stat-number {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+/* Container query utilities */
+@container (min-width: 320px) {
+  .container-small {
+    padding: 0.5rem;
+  }
+}
+
+@container (min-width: 640px) {
+  .container-medium {
+    padding: 1rem;
+  }
+}
+
+/* ─── Mobile Density (≤640px) ─────────────────────────────────── */
+@media (max-width: 640px) {
+  /* Tighter card padding on mobile */
+  [data-slot="card"] {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+  [data-slot="card-header"],
+  [data-slot="card-content"],
+  [data-slot="card-footer"] {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* Larger section headers for readability */
+  [data-slot="card-title"] {
+    font-size: 1rem;
+  }
+
+  /* Instant touch feedback */
+  button, a, [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+  }
+  button:active, a:active, [role="button"]:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+  }
+
+  /* Mobile card shadow — theme-aware via color-mix */
+  [data-slot="card"] {
+    box-shadow: 0 1px 3px color-mix(in srgb, var(--foreground) 6%, transparent),
+                0 1px 2px color-mix(in srgb, var(--foreground) 4%, transparent);
+  }
+
+  /* Badge minimum size */
+  [data-slot="badge"] {
+    min-height: 24px;
+    min-width: 2rem;
+    font-size: 0.75rem;
+  }
+
+  /* iOS minimum touch target (44×44px) for icon buttons */
+  [data-slot="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}

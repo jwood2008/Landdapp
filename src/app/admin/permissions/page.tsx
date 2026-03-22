@@ -16,10 +16,10 @@ export default async function PermissionsPage() {
   ])
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Token Permissions</h1>
-        <p className="text-muted-foreground">
+        <p className="text-base text-muted-foreground">
           Control which investors can hold your tokens using XRPL Authorized Trust Lines
         </p>
       </div>

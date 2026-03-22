@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/api-auth'
 import { signAndSubmit, signAndSubmitFromAddress, getCustodialAddress } from '@/lib/xrpl/wallet-manager'
+import { notifyAccountStatus } from '@/lib/email-notify'
 
 export async function PATCH(request: NextRequest) {
   const auth = await requireAdmin()
@@ -79,6 +80,9 @@ export async function PATCH(request: NextRequest) {
       console.warn('[account-approve] Trust line auto-setup error:', err)
     }
   }
+
+  // Send email notification (fire-and-forget)
+  notifyAccountStatus(userId, action).catch(() => {})
 
   return NextResponse.json({ success: true, status: newStatus })
 }

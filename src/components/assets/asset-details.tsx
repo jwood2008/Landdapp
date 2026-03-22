@@ -48,7 +48,7 @@ export function AssetDetails({ asset, circulatingSupply = 0 }: AssetDetailsProps
               </div>
             </div>
             {asset.ai_rating_updated_at && (
-              <p className="text-[11px] text-muted-foreground mt-2">
+              <p className="text-xs text-muted-foreground mt-2">
                 Updated {new Date(asset.ai_rating_updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
               </p>
             )}

@@ -16,7 +16,7 @@ export default async function AdminMarketplacePage() {
     supabase
       .from('marketplace_orders')
       .select('*, assets(asset_name, token_symbol), platform_investors(wallet_address, full_name)', { count: 'exact' })
-      .eq('status', 'open')
+      .in('status', ['open', 'partial'])
       .order('created_at', { ascending: false })
       .limit(20),
     supabase
@@ -41,21 +41,21 @@ export default async function AdminMarketplacePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Marketplace Overview</h1>
-        <p className="text-muted-foreground">
+        <p className="text-base text-muted-foreground">
           Monitor trading activity across the permission domain
           {!settings?.marketplace_enabled && (
-            <Badge variant="destructive" className="ml-2 text-xs">Marketplace Disabled</Badge>
+            <Badge variant="destructive" className="ml-2 rounded-full text-xs">Marketplace Disabled</Badge>
           )}
         </p>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-5 lg:grid-cols-4">
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-6">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
                 <Store className="h-5 w-5 text-primary" />
@@ -68,10 +68,10 @@ export default async function AdminMarketplacePage() {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-500/10">
-                <ArrowLeftRight className="h-5 w-5 text-green-500" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-status-success">
+                <ArrowLeftRight className="h-5 w-5 text-success" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Total Trades</p>
@@ -81,7 +81,7 @@ export default async function AdminMarketplacePage() {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-6">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-500/10">
                 <DollarSign className="h-5 w-5 text-teal-500" />
@@ -96,10 +96,10 @@ export default async function AdminMarketplacePage() {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10">
-                <TrendingUp className="h-5 w-5 text-amber-500" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-status-warning">
+                <TrendingUp className="h-5 w-5 text-warning" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Platform Fee</p>
@@ -121,12 +121,12 @@ export default async function AdminMarketplacePage() {
         </CardHeader>
         <CardContent>
           {(!openOrders || openOrders.length === 0) ? (
-            <div className="py-8 text-center">
-              <Store className="mx-auto h-8 w-8 text-muted-foreground/40 mb-2" />
+            <div className="py-12 text-center">
+              <Store className="mx-auto h-12 w-12 text-muted-foreground/40 mb-3" />
               <p className="text-sm text-muted-foreground">No open orders yet.</p>
             </div>
           ) : (
-            <div className="rounded-lg border border-border overflow-hidden">
+            <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="bg-muted/30">
@@ -151,10 +151,10 @@ export default async function AdminMarketplacePage() {
                           <span className="text-muted-foreground ml-1">{asset?.asset_name}</span>
                         </td>
                         <td className="px-4 py-2.5 text-center">
-                          <Badge className={`text-[10px] ${
+                          <Badge className={`rounded-full text-xs ${
                             o.side === 'buy'
-                              ? 'bg-green-500/10 text-green-500'
-                              : 'bg-red-500/10 text-red-500'
+                              ? 'bg-status-success text-success'
+                              : 'bg-status-danger text-destructive'
                           }`}>
                             {(o.side as string).toUpperCase()}
                           </Badge>
@@ -188,12 +188,12 @@ export default async function AdminMarketplacePage() {
         </CardHeader>
         <CardContent>
           {(!recentTrades || recentTrades.length === 0) ? (
-            <div className="py-8 text-center">
-              <ArrowLeftRight className="mx-auto h-8 w-8 text-muted-foreground/40 mb-2" />
+            <div className="py-12 text-center">
+              <ArrowLeftRight className="mx-auto h-12 w-12 text-muted-foreground/40 mb-3" />
               <p className="text-sm text-muted-foreground">No trades yet.</p>
             </div>
           ) : (
-            <div className="rounded-lg border border-border overflow-hidden">
+            <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="bg-muted/30">
@@ -218,10 +218,10 @@ export default async function AdminMarketplacePage() {
                           ${Number(t.total_price).toLocaleString(undefined, { maximumFractionDigits: 2 })}
                         </td>
                         <td className="px-4 py-2.5 text-center">
-                          <Badge className={`text-[10px] ${
-                            t.status === 'settled' ? 'bg-green-500/10 text-green-500' :
-                            t.status === 'pending' ? 'bg-amber-500/10 text-amber-500' :
-                            'bg-red-500/10 text-red-500'
+                          <Badge className={`rounded-full text-xs ${
+                            t.status === 'settled' ? 'bg-status-success text-success' :
+                            t.status === 'pending' ? 'bg-status-warning text-warning' :
+                            'bg-status-danger text-destructive'
                           }`}>
                             {(t.status as string)}
                           </Badge>

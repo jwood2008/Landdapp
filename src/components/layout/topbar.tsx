@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -8,15 +9,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { Sidebar } from '@/components/layout/sidebar'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { LogOut, Settings } from 'lucide-react'
+import { LogOut, Menu, Settings } from 'lucide-react'
 
 interface TopBarProps {
   user: {
     email: string
     fullName: string | null | undefined
   }
+  userRole?: string
 }
 
 function getInitials(name: string | null | undefined, email: string) {
@@ -24,8 +28,9 @@ function getInitials(name: string | null | undefined, email: string) {
   return email[0].toUpperCase()
 }
 
-export function TopBar({ user }: TopBarProps) {
+export function TopBar({ user, userRole }: TopBarProps) {
   const router = useRouter()
+  const [sheetOpen, setSheetOpen] = useState(false)
 
   async function handleSignOut() {
     const supabase = createClient()
@@ -36,7 +41,23 @@ export function TopBar({ user }: TopBarProps) {
 
   return (
     <header className="flex h-16 items-center justify-between border-b border-border bg-card/50 backdrop-blur-sm px-6 lg:px-8">
-      <div />
+      <div className="flex items-center">
+        <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+          <SheetTrigger
+            render={
+              <button
+                className="lg:hidden flex items-center justify-center h-9 w-9 rounded-lg hover:bg-accent transition-colors -ml-1 mr-2"
+                aria-label="Open navigation menu"
+              />
+            }
+          >
+            <Menu className="h-5 w-5 text-muted-foreground" />
+          </SheetTrigger>
+          <SheetContent side="left" className="w-64 p-0">
+            <Sidebar userRole={userRole ?? 'investor'} mobile />
+          </SheetContent>
+        </Sheet>
+      </div>
       <div className="flex items-center gap-3">
         <DropdownMenu>
           <DropdownMenuTrigger className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-accent transition-colors outline-none">

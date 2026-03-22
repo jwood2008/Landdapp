@@ -37,15 +37,15 @@ export default async function IssuerAnalyticsPage() {
   const uniqueHolders = new Set(holdings.map((h) => (h as { wallet_address: string }).wallet_address)).size
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Analytics</h1>
-        <p className="text-muted-foreground">Performance data for your tokenized land assets</p>
+        <p className="text-base text-muted-foreground">Performance data for your tokenized land assets</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-6">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
                 <BarChart3 className="h-5 w-5 text-primary" />
@@ -58,7 +58,7 @@ export default async function IssuerAnalyticsPage() {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-6">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-500/10">
                 <Users className="h-5 w-5 text-teal-500" />
@@ -71,10 +71,10 @@ export default async function IssuerAnalyticsPage() {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-500/10">
-                <DollarSign className="h-5 w-5 text-green-500" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-status-success">
+                <DollarSign className="h-5 w-5 text-success" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Royalties Paid</p>
@@ -84,10 +84,10 @@ export default async function IssuerAnalyticsPage() {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10">
-                <TrendingUp className="h-5 w-5 text-amber-500" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-status-warning">
+                <TrendingUp className="h-5 w-5 text-warning" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Royalty Events</p>
@@ -106,9 +106,12 @@ export default async function IssuerAnalyticsPage() {
         </CardHeader>
         <CardContent>
           {valuations.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4 text-center">No valuation history yet.</p>
+            <div className="text-center py-12">
+              <BarChart3 className="mx-auto h-12 w-12 text-muted-foreground/40 mb-3" />
+              <p className="text-base text-muted-foreground">No valuation history yet.</p>
+            </div>
           ) : (
-            <div className="rounded-lg border border-border overflow-hidden">
+            <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-muted/30">
@@ -129,11 +132,11 @@ export default async function IssuerAnalyticsPage() {
                           {new Date(v.recorded_at ?? v.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                         </td>
                         <td className="px-4 py-3">
-                          <Badge variant="outline" className="text-[10px]">{v.event_type}</Badge>
+                          <Badge variant="outline" className="text-xs rounded-full">{v.event_type}</Badge>
                         </td>
                         <td className="px-4 py-3 text-right font-mono text-xs tabular-nums">${Number(v.previous_value).toLocaleString()}</td>
                         <td className="px-4 py-3 text-right font-mono text-xs font-medium tabular-nums">${Number(v.current_value).toLocaleString()}</td>
-                        <td className={`px-4 py-3 text-right text-xs font-medium tabular-nums ${change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        <td className={`px-4 py-3 text-right text-xs font-medium tabular-nums ${change >= 0 ? 'text-success' : 'text-destructive'}`}>
                           {change >= 0 ? '+' : ''}{pct.toFixed(1)}%
                         </td>
                       </tr>

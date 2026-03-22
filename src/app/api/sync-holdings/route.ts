@@ -4,7 +4,7 @@ import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 
 const XRPL_MAINNET = 'https://xrplcluster.com/'
-const XRPL_TESTNET = 'https://s.altnet.rippletest.net:51234/'
+const XRPL_TESTNET = 'https://testnet.xrpl-labs.com/'
 const PLACEHOLDER_ISSUER = 'rISSUER_WALLET_ADDRESS_HERE'
 
 interface TrustLine {
@@ -21,7 +21,7 @@ async function getAccountLines(address: string, rpc: string): Promise<TrustLine[
       method: 'account_lines',
       params: [{ account: address, ledger_index: 'validated' }],
     }),
-    signal: AbortSignal.timeout(10000),
+    signal: AbortSignal.timeout(5000),
   })
 
   if (!res.ok) throw new Error(`XRPL RPC error: ${res.status}`)
@@ -39,18 +39,26 @@ async function getAccountLines(address: string, rpc: string): Promise<TrustLine[
 async function getAccountLinesAnyNetwork(
   address: string
 ): Promise<{ trustlines: TrustLine[]; network: string }> {
-  // Try mainnet first
+  // Use the configured network first (matches wallet-manager.ts)
+  const isTestnet = process.env.XRPL_NETWORK !== 'mainnet'
+  const primaryRpc = isTestnet ? XRPL_TESTNET : XRPL_MAINNET
+  const primaryName = isTestnet ? 'testnet' : 'mainnet'
+  const fallbackRpc = isTestnet ? XRPL_MAINNET : XRPL_TESTNET
+  const fallbackName = isTestnet ? 'mainnet' : 'testnet'
+
+  // Try configured network first — if it responds (even with 0 trustlines), use it.
+  // Only fall through to the other network if primary is unreachable.
   try {
-    const trustlines = await getAccountLines(address, XRPL_MAINNET)
-    if (trustlines.length > 0) return { trustlines, network: 'mainnet' }
+    const trustlines = await getAccountLines(address, primaryRpc)
+    return { trustlines, network: primaryName }
   } catch {
-    // mainnet unreachable — fall through
+    // primary unreachable — fall through
   }
 
-  // Fall back to testnet
+  // Fall back to other network
   try {
-    const trustlines = await getAccountLines(address, XRPL_TESTNET)
-    return { trustlines, network: 'testnet' }
+    const trustlines = await getAccountLines(address, fallbackRpc)
+    return { trustlines, network: fallbackName }
   } catch (err) {
     throw new Error(`XRPL unreachable on both networks: ${err instanceof Error ? err.message : err}`)
   }
@@ -94,17 +102,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Wallet not linked to your account' }, { status: 403 })
     }
 
-    // Fetch all active assets (RLS: authenticated users can read)
+    // Fetch all assets including delisted (investors may still hold tokens)
     const { data: assets, error: assetsError } = await supabase
       .from('assets')
-      .select('id, token_symbol, issuer_wallet, token_supply, nav_per_token')
-      .eq('is_active', true)
+      .select('id, token_symbol, issuer_wallet, token_supply, nav_per_token, owner_retained_percent')
 
     if (assetsError) {
       return NextResponse.json({ error: `Assets query: ${assetsError.message}` }, { status: 500 })
     }
     if (!assets || assets.length === 0) {
-      return NextResponse.json({ synced: 0, message: 'No active assets in database' })
+      return NextResponse.json({ synced: 0, message: 'No assets in database' })
     }
 
     // Fetch XRPL trustlines (tries mainnet, falls back to testnet)
@@ -126,8 +133,8 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // Match trustlines to assets
-    const upserts: {
+    // Match trustlines to assets — XRPL is the source of truth
+    const freshHoldings: {
       wallet_address: string
       asset_id: string
       token_balance: number
@@ -155,7 +162,7 @@ export async function POST(req: NextRequest) {
       const tokenSupply = Number(asset.token_supply)
       const ownershipPercent = tokenSupply > 0 ? (balance / tokenSupply) * 100 : 0
 
-      upserts.push({
+      freshHoldings.push({
         wallet_address: walletAddress,
         asset_id: asset.id,
         token_balance: balance,
@@ -164,8 +171,11 @@ export async function POST(req: NextRequest) {
       })
     }
 
+    const assetSymbolById = Object.fromEntries(assets.map(a => [a.id, a.token_symbol]))
+    console.log(`[sync-holdings] XRPL trustlines for ${walletAddress}: ${trustlines.map(t => `${t.currency}=${t.balance}`).join(', ')}`)
+    console.log(`[sync-holdings] Matched ${freshHoldings.length} holdings: ${freshHoldings.map(h => `${assetSymbolById[h.asset_id] ?? '?'}=${h.token_balance} (${h.ownership_percent.toFixed(1)}%)`).join(', ')}`)
+
     // Update placeholder issuer_wallet — needs service role or admin
-    // Try with service role key; fall through gracefully if key format unsupported
     if (issuerUpdates.length > 0) {
       try {
         const serviceClient = createServiceClient(
@@ -179,30 +189,35 @@ export async function POST(req: NextRequest) {
             .eq('id', update.id)
         }
       } catch {
-        // Service role key may be wrong format — log but don't block holdings sync
         console.warn('Could not update issuer_wallet — service role key may be invalid')
       }
     }
 
-    // Upsert investor_holdings (RLS: user can insert/update own wallet addresses)
-    if (upserts.length > 0) {
+    // Upsert holdings from XRPL — the ledger is the single source of truth.
+    // Uses the unique constraint on (wallet_address, asset_id) to update existing rows.
+    if (freshHoldings.length > 0) {
       const { error: upsertError } = await supabase
         .from('investor_holdings')
-        .upsert(upserts, { onConflict: 'wallet_address,asset_id' })
+        .upsert(freshHoldings, { onConflict: 'wallet_address,asset_id' })
 
       if (upsertError) {
+        console.error(`[sync-holdings] Upsert failed: ${upsertError.message}`)
         return NextResponse.json({
-          error: `Holdings upsert failed: ${upsertError.message}`,
-          upsertCount: 0,
+          error: `Holdings sync failed: ${upsertError.message}`,
         }, { status: 500 })
       }
     }
 
     return NextResponse.json({
-      synced: upserts.length,
+      synced: freshHoldings.length,
       trustlineCount: trustlines.length,
       network,
       issuerDiscovered: issuerUpdates.length > 0,
+      xrplBalances: freshHoldings.map(h => ({
+        symbol: assetSymbolById[h.asset_id] ?? '?',
+        balance: h.token_balance,
+        ownership: h.ownership_percent,
+      })),
       assets: assets.map(a => a.token_symbol),
       trustlines: trustlines.map(t => ({ currency: t.currency, balance: t.balance, account: t.account })),
     })

@@ -22,7 +22,7 @@ interface AssetHeaderProps {
 
 export function AssetHeader({ asset, holding }: AssetHeaderProps) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <Link
         href="/dashboard"
         className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), '-ml-2 gap-1.5 text-muted-foreground')}
@@ -32,7 +32,7 @@ export function AssetHeader({ asset, holding }: AssetHeaderProps) {
       </Link>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-1">
+        <div className="space-y-2">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight">{asset.asset_name}</h1>
             <Badge variant="secondary">{ASSET_TYPE_LABELS[asset.asset_type] ?? asset.asset_type}</Badge>

@@ -213,12 +213,12 @@ export function TrustlineManager({ issuerWallet, tokenSymbol }: TrustlineManager
               {ready.length > 0 && (
                 <div className="space-y-1">
                   {ready.map((r) => (
-                    <div key={r.address} className="flex items-center justify-between rounded-md bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800 px-3 py-2">
+                    <div key={r.address} className="flex items-center justify-between rounded-md bg-success/5 border border-success/20 px-3 py-2">
                       <div className="flex items-center gap-2">
-                        <ShieldCheck className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                        <ShieldCheck className="h-3.5 w-3.5 text-success" />
                         <span className="text-xs font-mono">{truncAddr(r.address)}</span>
                       </div>
-                      <Badge variant="default" className="text-[10px]">Ready</Badge>
+                      <Badge variant="default" className="text-xs">Ready</Badge>
                     </div>
                   ))}
                 </div>
@@ -227,15 +227,15 @@ export function TrustlineManager({ issuerWallet, tokenSymbol }: TrustlineManager
               {missing.length > 0 && (
                 <div className="space-y-1">
                   {missing.map((r) => (
-                    <div key={r.address} className="flex items-center justify-between rounded-md bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 px-3 py-2">
+                    <div key={r.address} className="flex items-center justify-between rounded-md bg-status-warning border border-warning/20 px-3 py-2">
                       <div className="flex items-center gap-2">
-                        <ShieldAlert className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                        <ShieldAlert className="h-3.5 w-3.5 text-warning" />
                         <span className="text-xs font-mono">{truncAddr(r.address)}</span>
                       </div>
                       <Button
                         variant="outline"
                         size="sm"
-                        className="h-6 text-[10px] gap-1 border-amber-300 dark:border-amber-700"
+                        className="h-6 text-xs gap-1 border-warning/20"
                         onClick={() => createTrustline(r.address)}
                         disabled={creatingFor === r.address}
                       >
@@ -251,7 +251,7 @@ export function TrustlineManager({ issuerWallet, tokenSymbol }: TrustlineManager
               )}
 
               {results.length > 0 && missing.length === 0 && (
-                <p className="text-xs text-green-700 dark:text-green-400 flex items-center gap-1.5">
+                <p className="text-xs text-success flex items-center gap-1.5">
                   <ShieldCheck className="h-3.5 w-3.5" />
                   All wallets have {currency} trust lines.
                 </p>

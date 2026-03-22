@@ -22,7 +22,7 @@ const playfair = Playfair_Display({
 })
 
 export const metadata: Metadata = {
-  title: 'RWA Platform | Tokenized Asset Investing',
+  title: 'TierraDex | Tokenized Asset Investing',
   description:
     'Invest in tokenized real-world assets. Fractional ownership of land, real estate, and more — powered by XRPL.',
 }

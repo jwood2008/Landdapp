@@ -16,11 +16,10 @@ export interface WalletHolding {
 export async function getWalletHoldings(walletAddress: string): Promise<WalletHolding[]> {
   const supabase = createClient()
 
-  // Fetch all active assets from Supabase
+  // Fetch all assets including delisted (investors may still hold tokens)
   const { data: assets, error } = await supabase
     .from('assets')
     .select('*')
-    .eq('is_active', true)
 
   if (error || !assets) return []
 

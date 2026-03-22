@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Wallet, Plus, Trash2, Star, KeyRound, X } from 'lucide-react'
+import { Wallet, Plus, Trash2, Star, KeyRound, X, Zap, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useWalletStore } from '@/store/wallet'
 import { XamanSignIn } from '@/components/wallet/xaman-signin'
@@ -35,6 +35,7 @@ export function WalletManager({ userId, wallets }: WalletManagerProps) {
   const { connect } = useWalletStore()
   const [showXaman, setShowXaman] = useState(false)
   const [connecting, setConnecting] = useState(false)
+  const [generating, setGenerating] = useState(false)
   const [showManual, setShowManual] = useState(false)
   const [manualAddress, setManualAddress] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -85,6 +86,21 @@ export function WalletManager({ userId, wallets }: WalletManagerProps) {
       setError(err instanceof Error ? err.message : 'Failed to add wallet')
     } finally {
       setConnecting(false)
+    }
+  }
+
+  async function handleGenerate() {
+    setGenerating(true)
+    setError(null)
+    try {
+      const res = await fetch('/api/wallet/create-custodial', { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      await upsertWallet(data.address)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to generate wallet')
+    } finally {
+      setGenerating(false)
     }
   }
 
@@ -170,8 +186,19 @@ export function WalletManager({ userId, wallets }: WalletManagerProps) {
       {!showXaman && (
         <div className="flex flex-wrap items-center gap-2">
           <Button
+            onClick={handleGenerate}
+            disabled={connecting || generating}
+            variant="outline"
+            size="sm"
+            className="gap-2"
+          >
+            {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+            {generating ? 'Generating...' : 'Generate Wallet'}
+          </Button>
+
+          <Button
             onClick={() => { setShowXaman(true); setError(null) }}
-            disabled={connecting}
+            disabled={connecting || generating}
             variant="outline"
             size="sm"
             className="gap-2"

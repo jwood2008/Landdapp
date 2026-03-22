@@ -3,6 +3,7 @@ import { requireAuth } from '@/lib/api-auth'
 import { signAndSubmitFromAddress } from '@/lib/xrpl/wallet-manager'
 import { buildPaymentAmount } from '@/lib/xrpl/amount'
 import { collectTokenizationFee } from '@/lib/xrpl/fee-collector'
+import { syncHoldingsForWallet } from '@/lib/sync-holdings-server'
 
 /**
  * PRIMARY MARKET BUY for Xaman (self-custody) users.
@@ -43,10 +44,10 @@ export async function POST(req: Request) {
       )
     }
 
-    // Supply cap enforcement: check DB token_supply vs circulating
+    // Supply cap enforcement: available = token_supply - owner_retained - investor_holdings
     const { data: assetRow } = await supabase
       .from('assets')
-      .select('id, token_supply')
+      .select('id, token_supply, owner_retained_percent')
       .eq('token_symbol', tokenSymbol)
       .eq('issuer_wallet', issuerWallet)
       .single()
@@ -55,17 +56,18 @@ export async function POST(req: Request) {
       const { data: holdingsRows } = await supabase
         .from('investor_holdings')
         .select('token_balance')
-        .eq('token_symbol', tokenSymbol)
+        .eq('asset_id', assetRow.id)
 
-      const circulating = (holdingsRows ?? []).reduce(
+      const investorHeld = (holdingsRows ?? []).reduce(
         (sum, h) => sum + Number(h.token_balance), 0
       )
+      const ownerRetained = Math.floor((Number(assetRow.owner_retained_percent ?? 0) / 100) * assetRow.token_supply)
+      const available = assetRow.token_supply - ownerRetained - investorHeld
 
-      if (circulating + tokenAmount > assetRow.token_supply) {
-        const remaining = assetRow.token_supply - circulating
+      if (tokenAmount > available) {
         return NextResponse.json(
           {
-            error: `Not enough tokens available. Requested ${tokenAmount} but only ${remaining.toLocaleString()} of ${assetRow.token_supply.toLocaleString()} ${tokenSymbol} remain.`,
+            error: `Not enough tokens available. Requested ${tokenAmount} but only ${Math.max(0, available).toLocaleString()} of ${assetRow.token_supply.toLocaleString()} ${tokenSymbol} are available for purchase (${ownerRetained} retained by owner).`,
           },
           { status: 400 }
         )
@@ -132,33 +134,11 @@ export async function POST(req: Request) {
       })
       .eq('id', orderId)
 
-    // Update holdings
-    const { data: existingHolding } = await supabase
-      .from('investor_holdings')
-      .select('id, token_balance')
-      .eq('wallet_address', investorAddress)
-      .eq('token_symbol', tokenSymbol)
-      .single()
-
-    if (existingHolding) {
-      await supabase
-        .from('investor_holdings')
-        .update({
-          token_balance: Number(existingHolding.token_balance) + tokenAmount,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', existingHolding.id)
-    } else {
-      const assetId = assetRow?.id
-      if (assetId) {
-        await supabase.from('investor_holdings').insert({
-          wallet_address: investorAddress,
-          asset_id: assetId,
-          token_symbol: tokenSymbol,
-          token_balance: tokenAmount,
-          cost_basis_per_token: pricePerToken,
-        })
-      }
+    // Sync holdings from XRPL — the ledger is the source of truth
+    try {
+      await syncHoldingsForWallet(investorAddress)
+    } catch (syncErr) {
+      console.warn('[primary-buy-xaman] Post-buy sync failed (non-fatal):', syncErr)
     }
 
     return NextResponse.json({

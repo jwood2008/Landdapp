@@ -57,10 +57,10 @@ interface XamanPayload {
 }
 
 const STATUS_CONFIG = {
-  pending: { label: 'Pending', icon: Clock, color: 'bg-amber-500/10 text-amber-500 border-amber-500/20' },
-  approved: { label: 'Approved', icon: CheckCircle2, color: 'bg-green-500/10 text-green-500 border-green-500/20' },
-  rejected: { label: 'Rejected', icon: XCircle, color: 'bg-red-500/10 text-red-500 border-red-500/20' },
-  frozen: { label: 'Frozen', icon: Snowflake, color: 'bg-blue-500/10 text-blue-500 border-blue-500/20' },
+  pending: { label: 'Pending', icon: Clock, color: 'bg-status-warning text-warning border-warning/20' },
+  approved: { label: 'Approved', icon: CheckCircle2, color: 'bg-status-success text-success border-success/20' },
+  rejected: { label: 'Rejected', icon: XCircle, color: 'bg-status-danger text-destructive border-destructive/20' },
+  frozen: { label: 'Frozen', icon: Snowflake, color: 'bg-status-info text-info border-primary/20' },
 } as const
 
 function truncateAddress(addr: string) {
@@ -305,9 +305,9 @@ export function PermissionsManager({ assets, approvals }: { assets: Asset[]; app
                 <div>
                   <CardTitle className="flex items-center gap-2">
                     {onChainData?.requireAuth ? (
-                      <ShieldCheck className="h-5 w-5 text-green-500" />
+                      <ShieldCheck className="h-5 w-5 text-success" />
                     ) : (
-                      <ShieldAlert className="h-5 w-5 text-amber-500" />
+                      <ShieldAlert className="h-5 w-5 text-warning" />
                     )}
                     Permission Domain — {selectedAsset.token_symbol}
                   </CardTitle>
@@ -345,7 +345,7 @@ export function PermissionsManager({ assets, approvals }: { assets: Asset[]; app
                   </div>
                   <div className="rounded-lg border border-border p-3">
                     <p className="text-xs text-muted-foreground">Status</p>
-                    <p className={`mt-1 text-sm font-medium ${onChainData.requireAuth ? 'text-green-500' : 'text-amber-500'}`}>
+                    <p className={`mt-1 text-sm font-medium ${onChainData.requireAuth ? 'text-success' : 'text-warning'}`}>
                       {onChainData.requireAuth ? 'Permissioned' : 'Open'}
                     </p>
                   </div>
@@ -411,7 +411,7 @@ export function PermissionsManager({ assets, approvals }: { assets: Asset[]; app
               )}
 
               {error && <p className="text-sm text-destructive">{error}</p>}
-              {success && <p className="text-sm text-green-500">{success}</p>}
+              {success && <p className="text-sm text-success">{success}</p>}
             </CardContent>
           </Card>
 
@@ -448,12 +448,12 @@ export function PermissionsManager({ assets, approvals }: { assets: Asset[]; app
                       .map((trust) => (
                         <div
                           key={trust.address}
-                          className="flex items-center justify-between rounded-lg border border-amber-500/20 bg-amber-500/5 p-4"
+                          className="flex items-center justify-between rounded-lg border border-warning/20 bg-status-warning p-4"
                         >
                           <div className="space-y-0.5">
                             <div className="flex items-center gap-2">
                               <span className="font-mono text-sm">{truncateAddress(trust.address)}</span>
-                              <Badge className="text-xs bg-amber-500/10 text-amber-500 border-amber-500/20">
+                              <Badge className="text-xs bg-status-warning text-warning border-warning/20">
                                 On-chain pending
                               </Badge>
                             </div>
@@ -550,7 +550,7 @@ export function PermissionsManager({ assets, approvals }: { assets: Asset[]; app
                               <span className="font-mono text-xs text-muted-foreground">
                                 {truncateAddress(trust.address)}
                               </span>
-                              <CheckCircle2 className="h-3 w-3 text-green-500" />
+                              <CheckCircle2 className="h-3 w-3 text-success" />
                             </div>
                             <span className="text-xs text-muted-foreground">
                               {parseFloat(trust.balance) !== 0

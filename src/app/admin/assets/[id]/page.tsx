@@ -11,7 +11,9 @@ import { OnChainAnalytics } from '@/components/admin/on-chain-analytics'
 import { ValuationAuditTrail } from '@/components/assets/valuation-audit-trail'
 import { TrustlineManager } from '@/components/admin/trustline-manager'
 import { ContractUpload } from '@/components/admin/contract-upload'
+import { AppraisalUpload } from '@/components/admin/appraisal-upload'
 import { AssetStatusToggle } from '@/components/admin/asset-status-toggle'
+import { OwnerWalletSettings } from '@/components/admin/owner-wallet-settings'
 import type { AssetRow } from '@/types/database'
 
 interface Props {
@@ -62,7 +64,7 @@ export default async function AdminAssetDetailPage({ params }: Props) {
   const approvedCount = (approvals ?? []).filter((a) => (a as { status: string }).status === 'approved').length
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <Link
           href="/admin"
@@ -83,11 +85,11 @@ export default async function AdminAssetDetailPage({ params }: Props) {
               <h1 className="text-2xl font-bold tracking-tight">{typedAsset.asset_name}</h1>
               <div className="flex items-center gap-2 mt-0.5">
                 <Badge variant="outline">{typedAsset.token_symbol}</Badge>
-                <Badge className={typedAsset.is_active ? 'bg-green-500/10 text-green-500' : 'bg-muted text-muted-foreground'}>
+                <Badge className={`rounded-full ${typedAsset.is_active ? 'bg-status-success text-success' : 'bg-muted text-muted-foreground'}`}>
                   {typedAsset.is_active ? 'Active' : 'Inactive'}
                 </Badge>
                 {typedAsset.require_auth && (
-                  <Badge className="text-xs bg-green-500/10 text-green-500 border-green-500/20 gap-1">
+                  <Badge className="rounded-full text-xs bg-status-success text-success border-success/20 gap-1">
                     <ShieldCheck className="h-2.5 w-2.5" />
                     Permissioned
                   </Badge>
@@ -100,12 +102,12 @@ export default async function AdminAssetDetailPage({ params }: Props) {
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-500/10">
-                <DollarSign className="h-5 w-5 text-green-500" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-status-success">
+                <DollarSign className="h-5 w-5 text-success" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Valuation</p>
@@ -115,7 +117,7 @@ export default async function AdminAssetDetailPage({ params }: Props) {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-6">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
                 <Coins className="h-5 w-5 text-primary" />
@@ -128,7 +130,7 @@ export default async function AdminAssetDetailPage({ params }: Props) {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-6">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-500/10">
                 <Coins className="h-5 w-5 text-teal-500" />
@@ -141,10 +143,10 @@ export default async function AdminAssetDetailPage({ params }: Props) {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10">
-                <Users className="h-5 w-5 text-amber-500" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-status-warning">
+                <Users className="h-5 w-5 text-warning" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Approved Investors</p>
@@ -154,7 +156,7 @@ export default async function AdminAssetDetailPage({ params }: Props) {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-6">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
                 <Percent className="h-5 w-5 text-primary" />
@@ -168,15 +170,15 @@ export default async function AdminAssetDetailPage({ params }: Props) {
         </Card>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-6">
+      <div className="grid gap-8 lg:grid-cols-3">
+        <div className="lg:col-span-2 space-y-8">
           {/* Valuation update */}
           <NavUpdateForm asset={typedAsset} />
 
           {/* Audit trail */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm flex items-center gap-2">
+              <CardTitle className="text-base flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4" />
                 Valuation Audit Trail
               </CardTitle>
@@ -204,13 +206,35 @@ export default async function AdminAssetDetailPage({ params }: Props) {
           </Card>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-8">
+          {/* Owner wallet settings */}
+          <OwnerWalletSettings
+            assetId={id}
+            ownerId={typedAsset.owner_id}
+            ownerWallet={typedAsset.owner_wallet ?? null}
+            tokenSymbol={typedAsset.token_symbol}
+            issuerWallet={typedAsset.issuer_wallet}
+            ownerRetainedPercent={typedAsset.owner_retained_percent ?? 0}
+            tokenSupply={typedAsset.token_supply}
+          />
+
           {/* Contract upload */}
           <ContractUpload
             assetId={id}
             assetName={typedAsset.asset_name}
             activeContract={(activeContract ?? null) as React.ComponentProps<typeof ContractUpload>['activeContract']}
           />
+
+            {/* Third-Party Appraisal */}
+            <AppraisalUpload
+              assetId={asset.id}
+              assetName={asset.asset_name}
+              currentValuation={Number(asset.current_valuation)}
+              existingAppraisal={null}
+              thirdPartyVerified={asset.third_party_verified ?? false}
+              appraiserName={(asset as Record<string, unknown>).third_party_appraiser_name as string | null ?? null}
+              appraisalDate={(asset as Record<string, unknown>).third_party_appraisal_date as string | null ?? null}
+            />
 
           {/* Trust line manager */}
           <TrustlineManager
@@ -228,9 +252,9 @@ export default async function AdminAssetDetailPage({ params }: Props) {
           {/* Asset metadata */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm">Asset Details</CardTitle>
+              <CardTitle className="text-base">Asset Details</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 text-sm">
+            <CardContent className="space-y-4 text-sm">
               <div>
                 <p className="text-xs text-muted-foreground">LLC / SPV</p>
                 <p className="mt-0.5">{typedAsset.llc_name}</p>

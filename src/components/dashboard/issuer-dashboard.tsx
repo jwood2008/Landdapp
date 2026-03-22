@@ -124,8 +124,8 @@ export function IssuerDashboard({
             {stats?.network && (
               <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                 stats.network === 'testnet'
-                  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                  : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                  ? 'bg-status-warning text-warning'
+                  : 'bg-status-success text-success'
               }`}>
                 {stats.network}
               </span>

@@ -6,8 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { createClient } from '@/lib/supabase/client'
-import { Upload, Loader2, Brain, CheckCircle, Trash2, FileText, AlertCircle, Wallet, Zap, ShieldCheck } from 'lucide-react'
-import type { OracleMethod } from '@/types/database'
+import { Upload, Loader2, Brain, CheckCircle, Trash2, FileText, AlertCircle, Wallet, Zap, ShieldCheck, Lock, Globe, UserPlus, X, Mail, Users } from 'lucide-react'
+import type { OracleMethod, AccessType } from '@/types/database'
 
 const ASSET_TYPES = [
   { value: 'land', label: 'Land' },
@@ -49,6 +49,13 @@ export function CreateAssetForm({ issuers = [] }: { issuers?: Issuer[] }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Access type state
+  const [accessType, setAccessType] = useState<AccessType>('public')
+  const [maxMembers, setMaxMembers] = useState('')
+  const [inviteEmails, setInviteEmails] = useState<string[]>([])
+  const [inviteInput, setInviteInput] = useState('')
+  const [inviteError, setInviteError] = useState<string | null>(null)
+
   // Owner email lookup state
   const [ownerEmail, setOwnerEmail] = useState('')
   const [ownerLooking, setOwnerLooking] = useState(false)
@@ -82,6 +89,12 @@ export function CreateAssetForm({ issuers = [] }: { issuers?: Issuer[] }) {
   const [requireAuthEnabled, setRequireAuthEnabled] = useState(false)
   const [walletError, setWalletError] = useState<string | null>(null)
 
+  // Owner personal wallet state
+  const [ownerWalletMode, setOwnerWalletMode] = useState<'generate' | 'manual'>('generate')
+  const [generatingOwnerWallet, setGeneratingOwnerWallet] = useState(false)
+  const [ownerWalletGenerated, setOwnerWalletGenerated] = useState(false)
+  const [ownerWalletError, setOwnerWalletError] = useState<string | null>(null)
+
   const [form, setForm] = useState({
     asset_name: '',
     asset_type: 'land',
@@ -98,6 +111,7 @@ export function CreateAssetForm({ issuers = [] }: { issuers?: Issuer[] }) {
     oracle_method: 'manual' as OracleMethod,
     owner_id: '',
     owner_retained_percent: '',
+    owner_wallet: '',
   })
 
   function update(field: string, value: string) {
@@ -140,6 +154,7 @@ export function CreateAssetForm({ issuers = [] }: { issuers?: Issuer[] }) {
 
       setOwnerFound(data as Issuer)
       update('owner_id', data.id)
+      checkExistingOwnerWallet(data.id)
     } catch {
       setOwnerError('Failed to look up user')
     } finally {
@@ -250,6 +265,59 @@ export function CreateAssetForm({ issuers = [] }: { issuers?: Issuer[] }) {
     }
   }
 
+  async function handleGenerateOwnerWallet() {
+    if (!form.owner_id) {
+      setOwnerWalletError('Select an owner first')
+      return
+    }
+    setGeneratingOwnerWallet(true)
+    setOwnerWalletError(null)
+
+    try {
+      const res = await fetch('/api/admin/generate-owner-wallet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: form.owner_id }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'Failed to generate wallet')
+
+      update('owner_wallet', data.address)
+      setOwnerWalletGenerated(true)
+    } catch (err) {
+      setOwnerWalletError(err instanceof Error ? err.message : 'Failed to generate owner wallet')
+    } finally {
+      setGeneratingOwnerWallet(false)
+    }
+  }
+
+  // Check if selected owner already has a wallet
+  async function checkExistingOwnerWallet(ownerId: string) {
+    const supabase = createClient()
+    const { data: existing } = await supabase
+      .from('wallets')
+      .select('address')
+      .eq('user_id', ownerId)
+      .eq('is_primary', true)
+      .single()
+
+    // Don't use the token wallet — check if it's actually a personal wallet
+    if (existing) {
+      const { data: custodial } = await supabase
+        .from('custodial_wallets')
+        .select('wallet_type')
+        .eq('address', existing.address)
+        .single()
+
+      // Only use if it's an investor-type wallet (personal), not a token wallet
+      if (!custodial || custodial.wallet_type === 'investor') {
+        update('owner_wallet', existing.address)
+        setOwnerWalletGenerated(true)
+      }
+    }
+  }
+
   function frequencyLabel(freq: string | null) {
     if (freq === 'monthly') return 'Monthly'
     if (freq === 'quarterly') return 'Quarterly'
@@ -275,6 +343,34 @@ export function CreateAssetForm({ issuers = [] }: { issuers?: Issuer[] }) {
     if (supply > 0 && valuation > 0) {
       update('nav_per_token', (valuation / supply).toFixed(4))
     }
+  }
+
+  function addInviteEmail() {
+    const email = inviteInput.trim().toLowerCase()
+    if (!email) return
+    setInviteError(null)
+
+    // Basic email validation
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setInviteError('Please enter a valid email address')
+      return
+    }
+    if (inviteEmails.includes(email)) {
+      setInviteError('This email has already been added')
+      return
+    }
+    const max = parseInt(maxMembers)
+    if (max > 0 && inviteEmails.length >= max) {
+      setInviteError(`Maximum ${max} members allowed`)
+      return
+    }
+
+    setInviteEmails((prev) => [...prev, email])
+    setInviteInput('')
+  }
+
+  function removeInviteEmail(email: string) {
+    setInviteEmails((prev) => prev.filter((e) => e !== email))
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -306,6 +402,9 @@ export function CreateAssetForm({ issuers = [] }: { issuers?: Issuer[] }) {
       royalty_frequency: royaltyFrequency,
       owner_id: form.owner_id || null,
       owner_retained_percent: form.owner_retained_percent ? parseFloat(form.owner_retained_percent) : 0,
+      owner_wallet: form.owner_wallet || null,
+      access_type: accessType,
+      max_members: accessType === 'private' && maxMembers ? parseInt(maxMembers) : null,
       is_active: true,
     }).select().single()
 
@@ -315,17 +414,46 @@ export function CreateAssetForm({ issuers = [] }: { issuers?: Issuer[] }) {
       return
     }
 
-    // Auto-link the issuer wallet to the issuer's account (issuers don't create personal wallets)
-    if (form.owner_id && form.issuer_wallet) {
+    // Link the owner's personal wallet to their account (if set)
+    if (form.owner_id && form.owner_wallet) {
       await supabase.from('wallets').upsert(
         {
           user_id: form.owner_id,
-          address: form.issuer_wallet,
-          label: `${form.token_symbol.toUpperCase()} Token Wallet`,
+          address: form.owner_wallet,
+          label: 'Personal Wallet',
           is_primary: true,
         },
         { onConflict: 'address' }
       )
+    }
+
+    // Auto-send retained tokens to owner wallet (non-blocking)
+    if (form.owner_wallet && parseFloat(form.owner_retained_percent) > 0) {
+      fetch('/api/admin/send-retained-tokens', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assetId: newAsset.id }),
+      }).catch((err) => console.warn('Auto-send retained tokens failed:', err))
+    }
+
+    // Auto-send tokenization fee to platform domain wallet (non-blocking)
+    fetch('/api/admin/send-tokenization-fee', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ assetId: newAsset.id }),
+    }).catch((err) => console.warn('Auto-send tokenization fee failed:', err))
+
+    // Insert invitations for private assets
+    if (accessType === 'private' && inviteEmails.length > 0) {
+      const { data: { user } } = await supabase.auth.getUser()
+      const invitations = inviteEmails.map((email) => ({
+        asset_id: newAsset.id,
+        email,
+        user_id: null,
+        status: 'pending' as const,
+        invited_by: user?.id ?? null,
+      }))
+      await supabase.from('asset_invitations').insert(invitations)
     }
 
     // If contract was uploaded, create the contract record linked to the new asset
@@ -425,13 +553,13 @@ export function CreateAssetForm({ issuers = [] }: { issuers?: Issuer[] }) {
             <Field label="Asset Owner (Issuer Email)">
               {ownerFound ? (
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2 rounded-lg border border-green-500/20 bg-green-500/5 px-3 py-2.5">
-                    <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
+                  <div className="flex items-center gap-2 rounded-lg border border-success/20 bg-success/5 px-3 py-2.5">
+                    <CheckCircle className="h-4 w-4 text-success shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium">{ownerFound.full_name ?? ownerFound.email}</p>
                       <p className="text-xs text-muted-foreground">{ownerFound.email}</p>
                     </div>
-                    <Badge className="text-[10px] bg-primary/10 text-primary shrink-0">
+                    <Badge className="text-xs bg-primary/10 text-primary shrink-0">
                       {ownerFound.role}
                     </Badge>
                     <button
@@ -481,17 +609,18 @@ export function CreateAssetForm({ issuers = [] }: { issuers?: Issuer[] }) {
                   )}
                   {issuers.length > 0 && !ownerEmail && (
                     <div className="space-y-1">
-                      <p className="text-[10px] text-muted-foreground">Or select an existing issuer:</p>
+                      <p className="text-xs text-muted-foreground">Or select an existing issuer:</p>
                       <div className="flex flex-wrap gap-1.5">
                         {issuers.map((issuer) => (
                           <button
                             key={issuer.id}
                             type="button"
-                            className="rounded-md border border-border px-2 py-1 text-[11px] hover:bg-muted/50 transition-colors"
+                            className="rounded-md border border-border px-2 py-1 text-xs hover:bg-muted/50 transition-colors"
                             onClick={() => {
                               setOwnerFound(issuer)
                               setOwnerEmail(issuer.email)
                               update('owner_id', issuer.id)
+                              checkExistingOwnerWallet(issuer.id)
                             }}
                           >
                             {issuer.full_name ?? issuer.email}
@@ -520,10 +649,94 @@ export function CreateAssetForm({ issuers = [] }: { issuers?: Issuer[] }) {
               step="0.1"
               className="input"
             />
-            <p className="text-xs text-muted-foreground mt-1">
-              % of tokens the owner keeps. When selling, admin issues these to marketplace.
-            </p>
+            {parseFloat(form.owner_retained_percent) > 0 && parseFloat(form.token_supply) > 0 && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Owner receives {Math.floor(parseFloat(form.token_supply) * parseFloat(form.owner_retained_percent) / 100)} of {form.token_supply} tokens at creation
+              </p>
+            )}
+            {!form.owner_retained_percent && (
+              <p className="text-xs text-muted-foreground mt-1">
+                % of tokens sent to the owner&apos;s personal wallet at creation.
+              </p>
+            )}
           </Field>
+
+          {/* Owner Personal Wallet — only shown when owner is set and retained > 0 */}
+          {form.owner_id && parseFloat(form.owner_retained_percent) > 0 && (
+            <div className="sm:col-span-2 space-y-3">
+              <Field label="Owner Personal Wallet (XRPL)">
+                <p className="text-xs text-muted-foreground mb-2">
+                  Separate from the token wallet. Retained tokens will be sent here after creation.
+                </p>
+                <div className="flex gap-2 mb-2">
+                  <button
+                    type="button"
+                    onClick={() => { setOwnerWalletMode('generate'); if (!ownerWalletGenerated) update('owner_wallet', '') }}
+                    className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                      ownerWalletMode === 'generate'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                    }`}
+                  >
+                    <Zap className="h-3 w-3" />
+                    Generate Wallet
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setOwnerWalletMode('manual'); setOwnerWalletGenerated(false) }}
+                    className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                      ownerWalletMode === 'manual'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                    }`}
+                  >
+                    <Wallet className="h-3 w-3" />
+                    Enter Address
+                  </button>
+                </div>
+
+                {ownerWalletMode === 'generate' ? (
+                  <>
+                    {ownerWalletGenerated && form.owner_wallet ? (
+                      <div className="flex items-center gap-2 rounded-lg border border-success/20 bg-success/5 px-3 py-2.5">
+                        <CheckCircle className="h-4 w-4 text-success shrink-0" />
+                        <code className="text-xs font-mono break-all flex-1">{form.owner_wallet}</code>
+                      </div>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleGenerateOwnerWallet}
+                        disabled={generatingOwnerWallet}
+                        className="gap-2"
+                      >
+                        {generatingOwnerWallet ? (
+                          <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Generating...</>
+                        ) : (
+                          <><Zap className="h-3.5 w-3.5" /> Generate Owner Wallet</>
+                        )}
+                      </Button>
+                    )}
+                  </>
+                ) : (
+                  <input
+                    value={form.owner_wallet}
+                    onChange={(e) => update('owner_wallet', e.target.value)}
+                    placeholder="rXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+                    className="input font-mono text-sm"
+                  />
+                )}
+
+                {ownerWalletError && (
+                  <div className="flex items-center gap-1.5 text-xs text-destructive mt-1">
+                    <AlertCircle className="h-3 w-3 shrink-0" />
+                    {ownerWalletError}
+                  </div>
+                )}
+              </Field>
+            </div>
+          )}
 
           <div className="sm:col-span-2">
             <Field label="Description">
@@ -536,6 +749,162 @@ export function CreateAssetForm({ issuers = [] }: { issuers?: Issuer[] }) {
               />
             </Field>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Access Type */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Access Type
+          </CardTitle>
+          <CardDescription>
+            Choose who can view and invest in this asset.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setAccessType('public')}
+              className={`relative flex flex-col items-center gap-3 rounded-xl border-2 p-6 transition-all ${
+                accessType === 'public'
+                  ? 'border-primary bg-primary/5 shadow-sm'
+                  : 'border-border hover:border-muted-foreground/30 hover:bg-muted/20'
+              }`}
+            >
+              {accessType === 'public' && (
+                <div className="absolute top-3 right-3">
+                  <CheckCircle className="h-4 w-4 text-primary" />
+                </div>
+              )}
+              <div className={`flex h-12 w-12 items-center justify-center rounded-full ${
+                accessType === 'public' ? 'bg-primary/10' : 'bg-muted/50'
+              }`}>
+                <Globe className={`h-6 w-6 ${accessType === 'public' ? 'text-primary' : 'text-muted-foreground'}`} />
+              </div>
+              <div className="text-center">
+                <p className="text-sm font-semibold">Public</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Visible to all investors on the marketplace
+                </p>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setAccessType('private')}
+              className={`relative flex flex-col items-center gap-3 rounded-xl border-2 p-6 transition-all ${
+                accessType === 'private'
+                  ? 'border-primary bg-primary/5 shadow-sm'
+                  : 'border-border hover:border-muted-foreground/30 hover:bg-muted/20'
+              }`}
+            >
+              {accessType === 'private' && (
+                <div className="absolute top-3 right-3">
+                  <CheckCircle className="h-4 w-4 text-primary" />
+                </div>
+              )}
+              <div className={`flex h-12 w-12 items-center justify-center rounded-full ${
+                accessType === 'private' ? 'bg-primary/10' : 'bg-muted/50'
+              }`}>
+                <Lock className={`h-6 w-6 ${accessType === 'private' ? 'text-primary' : 'text-muted-foreground'}`} />
+              </div>
+              <div className="text-center">
+                <p className="text-sm font-semibold">Private</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Invite-only — hidden from uninvited investors
+                </p>
+              </div>
+            </button>
+          </div>
+
+          {/* Private asset settings */}
+          {accessType === 'private' && (
+            <div className="space-y-5 rounded-xl border border-border bg-muted/10 p-5">
+              <Field label="Maximum Members">
+                <input
+                  type="number"
+                  value={maxMembers}
+                  onChange={(e) => setMaxMembers(e.target.value)}
+                  placeholder="e.g. 10"
+                  min="1"
+                  className="input"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Maximum number of investors who can hold this token. Leave blank for no limit.
+                </p>
+              </Field>
+
+              <div className="space-y-3">
+                <label className="text-sm font-medium flex items-center gap-2">
+                  <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                  Invite Members
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="email"
+                    value={inviteInput}
+                    onChange={(e) => { setInviteInput(e.target.value); setInviteError(null) }}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addInviteEmail() } }}
+                    placeholder="investor@example.com"
+                    className="input flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addInviteEmail}
+                    disabled={!inviteInput.trim()}
+                    className="shrink-0 gap-1.5"
+                  >
+                    <UserPlus className="h-3.5 w-3.5" />
+                    Add
+                  </Button>
+                </div>
+                {inviteError && (
+                  <div className="flex items-center gap-1.5 text-xs text-destructive">
+                    <AlertCircle className="h-3 w-3 shrink-0" />
+                    {inviteError}
+                  </div>
+                )}
+
+                {inviteEmails.length > 0 && (
+                  <div className="space-y-1.5">
+                    <p className="text-xs text-muted-foreground">
+                      {inviteEmails.length} member{inviteEmails.length !== 1 ? 's' : ''} invited
+                      {maxMembers && ` of ${maxMembers} max`}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {inviteEmails.map((email) => (
+                        <div
+                          key={email}
+                          className="flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium"
+                        >
+                          <Mail className="h-3 w-3 text-muted-foreground" />
+                          {email}
+                          <button
+                            type="button"
+                            onClick={() => removeInviteEmail(email)}
+                            className="ml-0.5 rounded-full p-0.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {inviteEmails.length === 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    You can also add members after creation from the asset detail page.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -601,18 +970,18 @@ export function CreateAssetForm({ issuers = [] }: { issuers?: Issuer[] }) {
                 <>
                   {walletGenerated && form.issuer_wallet ? (
                     <div className="space-y-2">
-                      <div className="flex items-center gap-2 rounded-lg border border-green-500/20 bg-green-500/5 px-3 py-2.5">
-                        <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
+                      <div className="flex items-center gap-2 rounded-lg border border-success/20 bg-success/5 px-3 py-2.5">
+                        <CheckCircle className="h-4 w-4 text-success shrink-0" />
                         <code className="text-xs font-mono break-all flex-1">{form.issuer_wallet}</code>
                       </div>
                       <div className="flex items-center gap-2">
                         {requireAuthEnabled ? (
-                          <Badge className="text-[10px] bg-green-500/10 text-green-500 border-green-500/20 gap-1">
+                          <Badge className="text-xs bg-status-success text-success border-success/20 gap-1">
                             <ShieldCheck className="h-2.5 w-2.5" />
                             Permission Domain Active
                           </Badge>
                         ) : (
-                          <Badge className="text-[10px] bg-amber-500/10 text-amber-500 border-amber-500/20 gap-1">
+                          <Badge className="text-xs bg-status-warning text-warning border-warning/20 gap-1">
                             <AlertCircle className="h-2.5 w-2.5" />
                             RequireAuth not set — enable in Permissions after creation
                           </Badge>
@@ -781,12 +1150,12 @@ export function CreateAssetForm({ issuers = [] }: { issuers?: Issuer[] }) {
         <CardContent className="space-y-4">
           {contractTerms ? (
             <>
-              <div className="rounded-lg border border-green-500/20 bg-green-500/5 p-4 space-y-3">
+              <div className="rounded-lg border border-success/20 bg-success/5 p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <CheckCircle className="h-4 w-4 text-success" />
                     <span className="text-sm font-medium">{contractTerms.fileName}</span>
-                    <Badge className="text-[10px] bg-primary/10 text-primary gap-1">
+                    <Badge className="text-xs bg-primary/10 text-primary gap-1">
                       <Brain className="h-2.5 w-2.5" />
                       AI Parsed
                     </Badge>
@@ -806,12 +1175,12 @@ export function CreateAssetForm({ issuers = [] }: { issuers?: Issuer[] }) {
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {contractTerms.tenant_name && (
                     <div>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Tenant</p>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider">Tenant</p>
                       <p className="text-sm font-medium">{contractTerms.tenant_name}</p>
                     </div>
                   )}
                   <div>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Annual Amount</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">Annual Amount</p>
                     <p className="text-sm font-semibold">
                       {contractTerms.annual_amount
                         ? `$${contractTerms.annual_amount.toLocaleString()}`
@@ -819,18 +1188,18 @@ export function CreateAssetForm({ issuers = [] }: { issuers?: Issuer[] }) {
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Frequency</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">Frequency</p>
                     <p className="text-sm font-medium">{frequencyLabel(contractTerms.payment_frequency)}</p>
                   </div>
                   {contractTerms.escalation_rate && (
                     <div>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Escalation</p>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider">Escalation</p>
                       <p className="text-sm font-medium">{contractTerms.escalation_rate}%/yr</p>
                     </div>
                   )}
                   {contractTerms.lease_start_date && (
                     <div>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Start</p>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider">Start</p>
                       <p className="text-sm font-medium">
                         {new Date(contractTerms.lease_start_date).toLocaleDateString()}
                       </p>
@@ -838,7 +1207,7 @@ export function CreateAssetForm({ issuers = [] }: { issuers?: Issuer[] }) {
                   )}
                   {contractTerms.lease_end_date && (
                     <div>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">End</p>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider">End</p>
                       <p className="text-sm font-medium">
                         {new Date(contractTerms.lease_end_date).toLocaleDateString()}
                       </p>

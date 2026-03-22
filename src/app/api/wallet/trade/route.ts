@@ -2,24 +2,17 @@ import { NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/api-auth'
 import { signAndSubmit, getCustodialAddress, signAndSubmitFromAddress } from '@/lib/xrpl/wallet-manager'
 import { buildPaymentAmount } from '@/lib/xrpl/amount'
-import { collectExchangeFee } from '@/lib/xrpl/fee-collector'
 
 /**
- * Execute a trade using the user's custodial wallet.
- * Signs and submits an OfferCreate to the XRPL DEX server-side.
- * No Xaman needed — the platform signs on behalf of the user.
+ * Place a sell listing or buy order using the user's custodial wallet.
  *
- * POST body: {
- *   orderId: string,
- *   side: 'buy' | 'sell',
- *   tokenAmount: number,
- *   pricePerToken: number,
- *   tokenSymbol: string,
- *   issuerWallet: string,
- *   currency: string,  // RLUSD | XRP
- * }
+ * SELL FLOW (order-book approach):
+ * 1. Seller creates a sell order in the marketplace_orders table
+ * 2. Tokens stay in the seller's wallet until a buyer matches
+ * 3. At settlement time (secondary-buy), tokens transfer directly from seller → buyer
  *
- * Returns: { hash, engineResult }
+ * BUY FLOW (legacy OfferCreate — use primary-buy or secondary-buy instead):
+ * Creates an OfferCreate on the XRPL DEX for buy orders.
  */
 export async function POST(req: Request) {
   const auth = await requireAuth()
@@ -44,7 +37,6 @@ export async function POST(req: Request) {
       )
     }
 
-    // Verify user has a custodial wallet
     const address = await getCustodialAddress(user.id)
     if (!address) {
       return NextResponse.json(
@@ -53,35 +45,33 @@ export async function POST(req: Request) {
       )
     }
 
-    const totalPayment = tokenAmount * pricePerToken
-    const payCurrency = currency ?? 'RLUSD'
+    if (side === 'sell') {
+      // ── SELL: List tokens on the marketplace ──
+      // No XRPL transaction here. Tokens remain in the seller's wallet.
+      // The order record was already created by the marketplace orders API.
+      // Tokens only move when a buyer matches via /api/wallet/secondary-buy.
 
-    // Build XRPL amounts
-    const tokenAmount_xrpl = buildPaymentAmount(tokenSymbol, String(tokenAmount), issuerWallet)
-    const paymentAmount_xrpl = buildPaymentAmount(payCurrency, String(totalPayment), issuerWallet)
+      console.log(`[trade] Sell order listed: ${tokenAmount} ${tokenSymbol} from ${address} at $${pricePerToken}/token`)
 
-    let takerPays: unknown
-    let takerGets: unknown
-
-    if (side === 'buy') {
-      takerPays = tokenAmount_xrpl
-      takerGets = paymentAmount_xrpl
-    } else {
-      takerPays = paymentAmount_xrpl
-      takerGets = tokenAmount_xrpl
+      return NextResponse.json({
+        hash: null,
+        engineResult: 'listed',
+        message: `${tokenAmount} ${tokenSymbol} listed for sale at $${pricePerToken} per token.`,
+      })
     }
 
-    // Ensure trust line + authorization for the token before trading
-    if (side === 'buy' && tokenSymbol !== 'XRP') {
-      // Investor creates trust line
+    // ── BUY: OfferCreate on DEX (legacy — prefer primary-buy/secondary-buy) ──
+    const totalPaymentUsd = tokenAmount * pricePerToken
+    const payCurrency = currency ?? 'XRP'
+
+    const tokenAmount_xrpl = buildPaymentAmount(tokenSymbol, String(tokenAmount), issuerWallet)
+    const paymentAmount_xrpl = buildPaymentAmount(payCurrency, String(totalPaymentUsd), issuerWallet)
+
+    if (tokenSymbol !== 'XRP') {
       try {
         await signAndSubmit(user.id, {
           TransactionType: 'TrustSet',
-          LimitAmount: {
-            currency: tokenSymbol,
-            issuer: issuerWallet,
-            value: '999999999',
-          },
+          LimitAmount: { currency: tokenSymbol, issuer: issuerWallet, value: '999999999' },
         })
       } catch (err) {
         const msg = err instanceof Error ? err.message : ''
@@ -90,58 +80,31 @@ export async function POST(req: Request) {
         }
       }
 
-      // Issuer authorizes the trust line (required when RequireAuth is enabled)
       try {
         await signAndSubmitFromAddress(issuerWallet, {
           TransactionType: 'TrustSet',
-          LimitAmount: {
-            currency: tokenSymbol,
-            issuer: address,
-            value: '0',
-          },
-          Flags: 65536, // tfSetfAuth
+          LimitAmount: { currency: tokenSymbol, issuer: address, value: '0' },
+          Flags: 65536,
         })
-      } catch (err) {
-        // Non-fatal — RequireAuth may not be enabled
-        const msg = err instanceof Error ? err.message : ''
-        console.warn('[trade] Trust line auth skipped:', msg)
+      } catch {
+        // Non-fatal
       }
     }
 
-    // Sign and submit using the custodial wallet
     const { hash, engineResult } = await signAndSubmit(user.id, {
       TransactionType: 'OfferCreate',
-      TakerPays: takerPays,
-      TakerGets: takerGets,
+      TakerPays: tokenAmount_xrpl,
+      TakerGets: paymentAmount_xrpl,
     })
 
-    // Collect exchange fee (non-blocking — trade still succeeds if fee fails)
-    let feeResult = null
-    if (engineResult === 'tesSUCCESS') {
-      feeResult = await collectExchangeFee({
-        userId: user.id,
-        currency: payCurrency,
-        totalPayment,
-        issuerWallet,
-      })
-    }
-
-    // Update the marketplace order with the tx hash
     if (orderId) {
       await supabase
         .from('marketplace_orders')
-        .update({
-          xrpl_offer_tx: hash,
-          updated_at: new Date().toISOString(),
-        })
+        .update({ xrpl_offer_tx: hash, updated_at: new Date().toISOString() })
         .eq('id', orderId)
     }
 
-    return NextResponse.json({
-      hash,
-      engineResult,
-      fee: feeResult ? { hash: feeResult.hash, amount: feeResult.feeAmount, currency: payCurrency } : null,
-    })
+    return NextResponse.json({ hash, engineResult })
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : 'Trade failed' },

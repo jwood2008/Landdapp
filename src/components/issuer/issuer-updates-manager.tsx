@@ -102,11 +102,11 @@ export function IssuerUpdatesManager({ assets, updates, issuerId }: Props) {
   const assetMap = new Map(assets.map((a) => [a.id, a]))
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Quarterly Updates</h1>
-          <p className="text-muted-foreground">Keep your investors informed about your land assets</p>
+          <p className="text-base text-muted-foreground">Keep your investors informed about your land assets</p>
         </div>
         <Button onClick={() => setShowForm(!showForm)} className="gap-2">
           <Plus className="h-4 w-4" />
@@ -171,7 +171,7 @@ export function IssuerUpdatesManager({ assets, updates, issuerId }: Props) {
                   rows={8}
                   className="input w-full text-sm resize-none"
                 />
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   AI will analyze this update and provide a rating once published.
                 </p>
               </div>
@@ -201,8 +201,8 @@ export function IssuerUpdatesManager({ assets, updates, issuerId }: Props) {
       {updates.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <FileText className="mx-auto h-10 w-10 text-muted-foreground/40 mb-3" />
-            <p className="text-muted-foreground">No quarterly updates yet.</p>
+            <FileText className="mx-auto h-12 w-12 text-muted-foreground/40 mb-3" />
+            <p className="text-base text-muted-foreground">No quarterly updates yet.</p>
             <p className="text-sm text-muted-foreground mt-1">
               Quarterly updates are required — they help investors track how their land is performing.
             </p>
@@ -218,8 +218,8 @@ export function IssuerUpdatesManager({ assets, updates, issuerId }: Props) {
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <Badge variant="outline" className="text-[10px]">{asset?.token_symbol ?? '?'}</Badge>
-                        <Badge className={`text-[10px] ${update.published ? 'bg-green-500/10 text-green-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                        <Badge variant="outline" className="text-xs rounded-full">{asset?.token_symbol ?? '?'}</Badge>
+                        <Badge className={`text-xs rounded-full ${update.published ? 'bg-status-success text-success' : 'bg-status-warning text-warning'}`}>
                           {update.published ? 'Published' : 'Draft'}
                         </Badge>
                         <span className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -254,16 +254,16 @@ export function IssuerUpdatesManager({ assets, updates, issuerId }: Props) {
                         <CheckCircle className="h-3.5 w-3.5 text-primary" />
                         <span className="text-xs font-medium">AI Analysis</span>
                         {update.ai_rating && (
-                          <Badge className={`text-[10px] ${
-                            update.ai_rating >= 7 ? 'bg-green-500/10 text-green-500' :
-                            update.ai_rating >= 4 ? 'bg-amber-500/10 text-amber-500' :
-                            'bg-red-500/10 text-red-500'
+                          <Badge className={`text-xs rounded-full ${
+                            update.ai_rating >= 7 ? 'bg-status-success text-success' :
+                            update.ai_rating >= 4 ? 'bg-status-warning text-warning' :
+                            'bg-status-danger text-destructive'
                           }`}>
                             Rating: {update.ai_rating}/10
                           </Badge>
                         )}
                         {update.ai_sentiment && (
-                          <Badge variant="outline" className="text-[10px] capitalize">
+                          <Badge variant="outline" className="text-xs rounded-full capitalize">
                             {update.ai_sentiment}
                           </Badge>
                         )}
@@ -272,7 +272,7 @@ export function IssuerUpdatesManager({ assets, updates, issuerId }: Props) {
                     </div>
                   )}
 
-                  <p className="text-[11px] text-muted-foreground mt-3">
+                  <p className="text-xs text-muted-foreground mt-3">
                     Posted {new Date(update.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                   </p>
                 </CardContent>

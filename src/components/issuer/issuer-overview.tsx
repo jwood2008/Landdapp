@@ -59,10 +59,10 @@ export function IssuerOverview({ assets, recentValuations, recentDistributions }
   const totalSupply = assets.reduce((sum, a) => sum + Number(a.token_supply), 0)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">My Assets</h1>
-        <p className="text-muted-foreground">
+        <p className="text-base text-muted-foreground">
           View your tokenized assets, valuations, and investor activity
         </p>
       </div>
@@ -70,7 +70,7 @@ export function IssuerOverview({ assets, recentValuations, recentDistributions }
       {/* Summary Cards */}
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-6">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
                 <Building2 className="h-5 w-5 text-primary" />
@@ -84,10 +84,10 @@ export function IssuerOverview({ assets, recentValuations, recentDistributions }
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500/10">
-                <DollarSign className="h-5 w-5 text-green-500" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-status-success">
+                <DollarSign className="h-5 w-5 text-success" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Total Valuation</p>
@@ -98,10 +98,10 @@ export function IssuerOverview({ assets, recentValuations, recentDistributions }
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/10">
-                <Coins className="h-5 w-5 text-blue-500" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-status-info">
+                <Coins className="h-5 w-5 text-info" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Total Tokens</p>
@@ -116,9 +116,9 @@ export function IssuerOverview({ assets, recentValuations, recentDistributions }
       {assets.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <Building2 className="mx-auto h-10 w-10 text-muted-foreground mb-3" />
-            <p className="text-muted-foreground">No assets assigned to your account yet.</p>
-            <p className="text-xs text-muted-foreground mt-1">
+            <Building2 className="mx-auto h-12 w-12 text-muted-foreground/40 mb-3" />
+            <p className="text-base text-muted-foreground">No assets assigned to your account yet.</p>
+            <p className="text-sm text-muted-foreground mt-1">
               Contact your platform administrator to get started.
             </p>
           </CardContent>
@@ -137,11 +137,11 @@ export function IssuerOverview({ assets, recentValuations, recentDistributions }
                     <div>
                       <p className="font-semibold">{asset.asset_name}</p>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="outline" className="text-xs rounded-full">
                           {asset.token_symbol}
                         </Badge>
                         {asset.require_auth && (
-                          <Badge className="text-xs bg-green-500/10 text-green-500 border-green-500/20">
+                          <Badge className="text-xs rounded-full bg-status-success text-success border-success/20">
                             Permissioned
                           </Badge>
                         )}
@@ -158,7 +158,7 @@ export function IssuerOverview({ assets, recentValuations, recentDistributions }
                     </div>
                     {asset.annual_yield != null && (
                       <div className="text-right">
-                        <p className="text-sm font-bold text-green-500">
+                        <p className="text-sm font-bold text-success">
                           {Number(asset.annual_yield).toFixed(2)}%
                         </p>
                         <p className="text-xs text-muted-foreground">Yield</p>
@@ -189,7 +189,10 @@ export function IssuerOverview({ assets, recentValuations, recentDistributions }
           </CardHeader>
           <CardContent>
             {recentValuations.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">No valuations yet</p>
+              <div className="text-center py-12">
+                <TrendingUp className="mx-auto h-12 w-12 text-muted-foreground/40 mb-3" />
+                <p className="text-base text-muted-foreground">No valuations yet</p>
+              </div>
             ) : (
               <div className="space-y-3">
                 {recentValuations.map((val) => {
@@ -207,7 +210,7 @@ export function IssuerOverview({ assets, recentValuations, recentDistributions }
                       </div>
                       <div className="text-right">
                         <p className="font-mono font-medium">${val.current_value.toLocaleString()}</p>
-                        <p className={`text-xs font-medium ${isUp ? 'text-green-500' : 'text-red-500'}`}>
+                        <p className={`text-xs font-medium ${isUp ? 'text-success' : 'text-destructive'}`}>
                           {isUp ? '+' : ''}{change.toFixed(1)}%
                         </p>
                       </div>
@@ -230,7 +233,10 @@ export function IssuerOverview({ assets, recentValuations, recentDistributions }
           </CardHeader>
           <CardContent>
             {recentDistributions.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">No distributions yet</p>
+              <div className="text-center py-12">
+                <History className="mx-auto h-12 w-12 text-muted-foreground/40 mb-3" />
+                <p className="text-base text-muted-foreground">No distributions yet</p>
+              </div>
             ) : (
               <div className="space-y-3">
                 {recentDistributions.map((dist) => (
@@ -238,7 +244,7 @@ export function IssuerOverview({ assets, recentValuations, recentDistributions }
                     <div>
                       <p className="font-medium">{dist.assets?.asset_name ?? 'Unknown'}</p>
                       <div className="flex items-center gap-1.5 mt-0.5">
-                        <Badge variant="outline" className="text-xs">{dist.event_type}</Badge>
+                        <Badge variant="outline" className="text-xs rounded-full">{dist.event_type}</Badge>
                         <span className="text-xs text-muted-foreground">
                           {new Date(dist.created_at).toLocaleDateString()}
                         </span>
@@ -248,10 +254,10 @@ export function IssuerOverview({ assets, recentValuations, recentDistributions }
                       <p className="font-mono font-medium">
                         ${Number(dist.total_amount).toLocaleString()}
                       </p>
-                      <Badge className={`text-xs ${
+                      <Badge className={`text-xs rounded-full ${
                         dist.status === 'completed'
-                          ? 'bg-green-500/10 text-green-500'
-                          : 'bg-amber-500/10 text-amber-500'
+                          ? 'bg-status-success text-success'
+                          : 'bg-status-warning text-warning'
                       }`}>
                         {dist.status}
                       </Badge>

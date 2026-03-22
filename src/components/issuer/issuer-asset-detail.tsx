@@ -12,9 +12,12 @@ import {
   FileText,
   History,
   ArrowLeft,
+  Wallet,
+  Percent,
 } from 'lucide-react'
 import Link from 'next/link'
 import { ValuationAuditTrail } from '@/components/assets/valuation-audit-trail'
+import { OracleConfigPanel } from '@/components/issuer/oracle-config'
 
 interface Props {
   asset: Record<string, unknown>
@@ -25,10 +28,10 @@ interface Props {
 }
 
 const STATUS_STYLES: Record<string, string> = {
-  pending: 'bg-amber-500/10 text-amber-500',
-  approved: 'bg-green-500/10 text-green-500',
-  rejected: 'bg-red-500/10 text-red-500',
-  frozen: 'bg-blue-500/10 text-blue-500',
+  pending: 'bg-status-warning text-warning',
+  approved: 'bg-status-success text-success',
+  rejected: 'bg-status-danger text-destructive',
+  frozen: 'bg-status-info text-info',
 }
 
 export function IssuerAssetDetail({ asset, valuations, valuationDocs, distributions, approvals }: Props) {
@@ -41,7 +44,7 @@ export function IssuerAssetDetail({ asset, valuations, valuationDocs, distributi
   const pendingCount = approvals.filter((a) => a.status === 'pending').length
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Back link + header */}
       <div>
         <Link
@@ -58,14 +61,14 @@ export function IssuerAssetDetail({ asset, valuations, valuationDocs, distributi
           <div>
             <h1 className="text-2xl font-bold tracking-tight">{asset.asset_name as string}</h1>
             <div className="flex items-center gap-2 mt-0.5">
-              <Badge variant="outline">{asset.token_symbol as string}</Badge>
+              <Badge variant="outline" className="rounded-full">{asset.token_symbol as string}</Badge>
               {Boolean(asset.require_auth) && (
-                <Badge className="text-xs bg-green-500/10 text-green-500 border-green-500/20 gap-1">
+                <Badge className="text-xs rounded-full bg-status-success text-success border-success/20 gap-1">
                   <ShieldCheck className="h-2.5 w-2.5" />
                   Permissioned
                 </Badge>
               )}
-              <Badge className="text-xs bg-blue-500/10 text-blue-500 border-blue-500/20">
+              <Badge className="text-xs rounded-full bg-status-info text-info border-primary/20">
                 View Only
               </Badge>
             </div>
@@ -76,9 +79,9 @@ export function IssuerAssetDetail({ asset, valuations, valuationDocs, distributi
       {/* Stats Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-6">
             <div className="flex items-center gap-3">
-              <DollarSign className="h-5 w-5 text-green-500" />
+              <DollarSign className="h-5 w-5 text-success" />
               <div>
                 <p className="text-xs text-muted-foreground">Current Valuation</p>
                 <p className="text-xl font-bold">${valuation.toLocaleString()}</p>
@@ -88,7 +91,7 @@ export function IssuerAssetDetail({ asset, valuations, valuationDocs, distributi
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-6">
             <div className="flex items-center gap-3">
               <Coins className="h-5 w-5 text-primary" />
               <div>
@@ -100,9 +103,9 @@ export function IssuerAssetDetail({ asset, valuations, valuationDocs, distributi
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-6">
             <div className="flex items-center gap-3">
-              <Coins className="h-5 w-5 text-blue-500" />
+              <Coins className="h-5 w-5 text-info" />
               <div>
                 <p className="text-xs text-muted-foreground">Total Supply</p>
                 <p className="text-xl font-bold">{supply.toLocaleString()}</p>
@@ -112,9 +115,9 @@ export function IssuerAssetDetail({ asset, valuations, valuationDocs, distributi
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-6">
             <div className="flex items-center gap-3">
-              <TrendingUp className="h-5 w-5 text-green-500" />
+              <TrendingUp className="h-5 w-5 text-success" />
               <div>
                 <p className="text-xs text-muted-foreground">Annual Yield</p>
                 <p className="text-xl font-bold">
@@ -169,9 +172,10 @@ export function IssuerAssetDetail({ asset, valuations, valuationDocs, distributi
             </CardHeader>
             <CardContent>
               {distributions.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-6">
-                  No distributions recorded yet.
-                </p>
+                <div className="text-center py-12">
+                  <History className="mx-auto h-12 w-12 text-muted-foreground/40 mb-3" />
+                  <p className="text-base text-muted-foreground">No distributions recorded yet.</p>
+                </div>
               ) : (
                 <div className="space-y-2">
                   {distributions.map((dist) => (
@@ -180,18 +184,18 @@ export function IssuerAssetDetail({ asset, valuations, valuationDocs, distributi
                       className="flex items-center justify-between rounded-lg border border-border p-3"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/10">
-                          <DollarSign className="h-4 w-4 text-green-500" />
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-status-success">
+                          <DollarSign className="h-4 w-4 text-success" />
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="text-xs rounded-full">
                               {dist.event_type as string}
                             </Badge>
-                            <Badge className={`text-xs ${
+                            <Badge className={`text-xs rounded-full ${
                               dist.status === 'completed'
-                                ? 'bg-green-500/10 text-green-500'
-                                : 'bg-amber-500/10 text-amber-500'
+                                ? 'bg-status-success text-success'
+                                : 'bg-status-warning text-warning'
                             }`}>
                               {dist.status as string}
                             </Badge>
@@ -228,11 +232,11 @@ export function IssuerAssetDetail({ asset, valuations, valuationDocs, distributi
             <CardContent className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-lg border border-border p-3 text-center">
-                  <p className="text-2xl font-bold text-green-500">{approvedCount}</p>
+                  <p className="text-2xl font-bold text-success">{approvedCount}</p>
                   <p className="text-xs text-muted-foreground">Approved</p>
                 </div>
                 <div className="rounded-lg border border-border p-3 text-center">
-                  <p className="text-2xl font-bold text-amber-500">{pendingCount}</p>
+                  <p className="text-2xl font-bold text-warning">{pendingCount}</p>
                   <p className="text-xs text-muted-foreground">Pending</p>
                 </div>
               </div>
@@ -251,7 +255,7 @@ export function IssuerAssetDetail({ asset, valuations, valuationDocs, distributi
                       <span className="font-mono text-xs text-muted-foreground">
                         {(a.investor_address as string).slice(0, 8)}...{(a.investor_address as string).slice(-6)}
                       </span>
-                      <Badge className={`text-xs ${STATUS_STYLES[a.status as string] ?? ''}`}>
+                      <Badge className={`text-xs rounded-full ${STATUS_STYLES[a.status as string] ?? ''}`}>
                         {a.status as string}
                       </Badge>
                     </div>
@@ -271,17 +275,34 @@ export function IssuerAssetDetail({ asset, valuations, valuationDocs, distributi
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               <div>
-                <p className="text-xs text-muted-foreground">Issuer Wallet</p>
+                <p className="text-xs text-muted-foreground">Token Wallet (Issuer)</p>
                 <p className="font-mono text-xs mt-0.5 break-all">
                   {asset.issuer_wallet as string}
                 </p>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Oracle Method</p>
-                <p className="capitalize mt-0.5">
-                  {(asset.oracle_method as string)?.replace('_', ' ') ?? 'Manual'}
-                </p>
-              </div>
+              {Boolean(asset.owner_wallet) && (
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <Wallet className="h-3 w-3 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">Your Personal Wallet</p>
+                  </div>
+                  <p className="font-mono text-xs mt-0.5 break-all">
+                    {asset.owner_wallet as string}
+                  </p>
+                </div>
+              )}
+              {Number(asset.owner_retained_percent) > 0 && (
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <Percent className="h-3 w-3 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">Owner Retained</p>
+                  </div>
+                  <p className="mt-0.5">
+                    {Math.floor(supply * Number(asset.owner_retained_percent) / 100).toLocaleString()} {asset.token_symbol as string}{' '}
+                    <span className="text-muted-foreground">({String(asset.owner_retained_percent)}%)</span>
+                  </p>
+                </div>
+              )}
               <div>
                 <p className="text-xs text-muted-foreground">Created</p>
                 <p className="mt-0.5">
@@ -292,6 +313,13 @@ export function IssuerAssetDetail({ asset, valuations, valuationDocs, distributi
               </div>
             </CardContent>
           </Card>
+
+          {/* Oracle Configuration */}
+          <OracleConfigPanel
+            assetId={asset.id as string}
+            initialMethod={(asset.oracle_method as string) ?? 'manual'}
+            initialConfig={asset.oracle_config as { operator_wallets: string[]; auto_distribute: boolean; confidence_threshold: number; last_checked_ledger?: number } | null}
+          />
         </div>
       </div>
     </div>

@@ -8,45 +8,41 @@ import { useTheme } from 'next-themes'
  * Only the CSS variable values are needed here for initialization.
  */
 const THEME_COLORS: Record<string, { light: Record<string, string>; dark: Record<string, string> }> = {
-  forest: {
-    light: { '--primary': 'oklch(0.38 0.12 155)', '--accent': 'oklch(0.92 0.025 155)', '--sidebar': 'oklch(0.22 0.05 160)', '--sidebar-primary': 'oklch(0.80 0.14 80)' },
-    dark: { '--primary': 'oklch(0.75 0.14 160)', '--accent': 'oklch(0.26 0.015 155)', '--sidebar': 'oklch(0.15 0.010 155)', '--sidebar-primary': 'oklch(0.78 0.11 85)' },
-  },
-  midnight: {
-    light: { '--primary': 'oklch(0.45 0.18 265)', '--accent': 'oklch(0.93 0.02 265)', '--sidebar': 'oklch(0.22 0.05 265)', '--sidebar-primary': 'oklch(0.75 0.15 80)' },
-    dark: { '--primary': 'oklch(0.72 0.16 265)', '--accent': 'oklch(0.25 0.02 265)', '--sidebar': 'oklch(0.15 0.02 265)', '--sidebar-primary': 'oklch(0.75 0.12 80)' },
-  },
   slate: {
-    light: { '--primary': 'oklch(0.45 0.03 260)', '--accent': 'oklch(0.93 0.005 260)', '--sidebar': 'oklch(0.23 0.02 260)', '--sidebar-primary': 'oklch(0.80 0.10 210)' },
-    dark: { '--primary': 'oklch(0.70 0.03 260)', '--accent': 'oklch(0.25 0.01 260)', '--sidebar': 'oklch(0.16 0.01 260)', '--sidebar-primary': 'oklch(0.75 0.08 210)' },
+    light: { '--primary': '#334155', '--accent': '#F1F5F9', '--sidebar': '#0F172A', '--sidebar-primary': '#94A3B8' },
+    dark: { '--primary': '#94A3B8', '--accent': '#1E293B', '--sidebar': '#020617', '--sidebar-primary': '#CBD5E1' },
   },
-  ember: {
-    light: { '--primary': 'oklch(0.52 0.18 40)', '--accent': 'oklch(0.94 0.02 55)', '--sidebar': 'oklch(0.22 0.06 35)', '--sidebar-primary': 'oklch(0.82 0.14 80)' },
-    dark: { '--primary': 'oklch(0.72 0.16 40)', '--accent': 'oklch(0.25 0.02 40)', '--sidebar': 'oklch(0.15 0.03 35)', '--sidebar-primary': 'oklch(0.78 0.12 80)' },
-  },
-  ocean: {
-    light: { '--primary': 'oklch(0.52 0.12 210)', '--accent': 'oklch(0.94 0.02 210)', '--sidebar': 'oklch(0.24 0.04 210)', '--sidebar-primary': 'oklch(0.80 0.12 170)' },
-    dark: { '--primary': 'oklch(0.72 0.12 210)', '--accent': 'oklch(0.25 0.02 210)', '--sidebar': 'oklch(0.16 0.02 210)', '--sidebar-primary': 'oklch(0.78 0.10 170)' },
-  },
-  violet: {
-    light: { '--primary': 'oklch(0.50 0.20 290)', '--accent': 'oklch(0.94 0.03 290)', '--sidebar': 'oklch(0.22 0.07 290)', '--sidebar-primary': 'oklch(0.80 0.14 60)' },
-    dark: { '--primary': 'oklch(0.72 0.18 290)', '--accent': 'oklch(0.25 0.03 290)', '--sidebar': 'oklch(0.15 0.04 290)', '--sidebar-primary': 'oklch(0.78 0.12 60)' },
-  },
-  rose: {
-    light: { '--primary': 'oklch(0.50 0.18 15)', '--accent': 'oklch(0.95 0.02 15)', '--sidebar': 'oklch(0.22 0.06 15)', '--sidebar-primary': 'oklch(0.82 0.12 55)' },
-    dark: { '--primary': 'oklch(0.72 0.16 15)', '--accent': 'oklch(0.25 0.02 15)', '--sidebar': 'oklch(0.15 0.03 15)', '--sidebar-primary': 'oklch(0.78 0.10 55)' },
-  },
-  gold: {
-    light: { '--primary': 'oklch(0.55 0.14 80)', '--accent': 'oklch(0.95 0.03 85)', '--sidebar': 'oklch(0.24 0.05 70)', '--sidebar-primary': 'oklch(0.80 0.14 80)' },
-    dark: { '--primary': 'oklch(0.75 0.13 80)', '--accent': 'oklch(0.26 0.02 80)', '--sidebar': 'oklch(0.16 0.03 70)', '--sidebar-primary': 'oklch(0.78 0.12 80)' },
+  indigo: {
+    light: { '--primary': '#4F46E5', '--accent': '#EEF2FF', '--sidebar': '#1E1B4B', '--sidebar-primary': '#A5B4FC' },
+    dark: { '--primary': '#818CF8', '--accent': '#1E1B4B', '--sidebar': '#0F0D2E', '--sidebar-primary': '#C7D2FE' },
   },
   emerald: {
-    light: { '--primary': 'oklch(0.58 0.14 165)', '--accent': 'oklch(0.94 0.03 165)', '--sidebar': 'oklch(0.26 0.05 165)', '--sidebar-primary': 'oklch(0.82 0.12 100)' },
-    dark: { '--primary': 'oklch(0.75 0.14 165)', '--accent': 'oklch(0.26 0.02 165)', '--sidebar': 'oklch(0.17 0.03 165)', '--sidebar-primary': 'oklch(0.78 0.10 100)' },
+    light: { '--primary': '#059669', '--accent': '#ECFDF5', '--sidebar': '#022C22', '--sidebar-primary': '#6EE7B7' },
+    dark: { '--primary': '#34D399', '--accent': '#022C22', '--sidebar': '#011A14', '--sidebar-primary': '#6EE7B7' },
+  },
+  violet: {
+    light: { '--primary': '#7C3AED', '--accent': '#F5F3FF', '--sidebar': '#2E1065', '--sidebar-primary': '#C4B5FD' },
+    dark: { '--primary': '#A78BFA', '--accent': '#1C1033', '--sidebar': '#120B28', '--sidebar-primary': '#C4B5FD' },
+  },
+  rose: {
+    light: { '--primary': '#E11D48', '--accent': '#FFF1F2', '--sidebar': '#4C0519', '--sidebar-primary': '#FDA4AF' },
+    dark: { '--primary': '#FB7185', '--accent': '#2A0A14', '--sidebar': '#1A0510', '--sidebar-primary': '#FDA4AF' },
+  },
+  amber: {
+    light: { '--primary': '#D97706', '--accent': '#FFFBEB', '--sidebar': '#451A03', '--sidebar-primary': '#FCD34D' },
+    dark: { '--primary': '#FBBF24', '--accent': '#27170A', '--sidebar': '#1A0F05', '--sidebar-primary': '#FCD34D' },
+  },
+  teal: {
+    light: { '--primary': '#0D9488', '--accent': '#F0FDFA', '--sidebar': '#042F2E', '--sidebar-primary': '#5EEAD4' },
+    dark: { '--primary': '#2DD4BF', '--accent': '#042F2E', '--sidebar': '#021C1B', '--sidebar-primary': '#5EEAD4' },
   },
   noir: {
-    light: { '--primary': 'oklch(0.20 0 0)', '--accent': 'oklch(0.95 0 0)', '--sidebar': 'oklch(0.12 0 0)', '--sidebar-primary': 'oklch(0.95 0 0)' },
-    dark: { '--primary': 'oklch(0.90 0 0)', '--accent': 'oklch(0.22 0 0)', '--sidebar': 'oklch(0.10 0 0)', '--sidebar-primary': 'oklch(0.90 0 0)' },
+    light: { '--primary': '#171717', '--accent': '#F5F5F5', '--sidebar': '#0A0A0A', '--sidebar-primary': '#D4D4D4' },
+    dark: { '--primary': '#E5E5E5', '--accent': '#171717', '--sidebar': '#0A0A0A', '--sidebar-primary': '#D4D4D4' },
+  },
+  ocean: {
+    light: { '--primary': '#0369A1', '--accent': '#F0F9FF', '--sidebar': '#082F49', '--sidebar-primary': '#7DD3FC' },
+    dark: { '--primary': '#38BDF8', '--accent': '#0C2D48', '--sidebar': '#051B2C', '--sidebar-primary': '#7DD3FC' },
   },
 }
 
@@ -55,7 +51,7 @@ export function ThemeInitializer() {
 
   useEffect(() => {
     const saved = localStorage.getItem('rwa-color-theme')
-    if (!saved || saved === 'forest' || !THEME_COLORS[saved]) return
+    if (!saved || saved === 'default' || !THEME_COLORS[saved]) return
 
     const mode = resolvedTheme === 'dark' ? 'dark' : 'light'
     const colors = THEME_COLORS[saved][mode]

@@ -100,7 +100,7 @@ export function ConnectWalletButton({ className }: { className?: string }) {
         <DropdownMenuTrigger
           className={cn(buttonVariants({ variant: 'outline' }), 'gap-2', className)}
         >
-          <div className="h-2 w-2 rounded-full bg-green-500" />
+          <div className="h-2 w-2 rounded-full bg-success" />
           <span className="font-mono text-sm">{truncateAddress(address)}</span>
           <ChevronDown className="h-3.5 w-3.5 opacity-50" />
         </DropdownMenuTrigger>
@@ -111,7 +111,7 @@ export function ConnectWalletButton({ className }: { className?: string }) {
           </div>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleCopy} className="gap-2">
-            {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+            {copied ? <Check className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4" />}
             {copied ? 'Copied!' : 'Copy address'}
           </DropdownMenuItem>
           <DropdownMenuSeparator />

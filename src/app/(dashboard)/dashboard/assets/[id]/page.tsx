@@ -8,6 +8,9 @@ import { AssetDetails } from '@/components/assets/asset-details'
 import { ValuationAuditTrail } from '@/components/assets/valuation-audit-trail'
 import { QuarterlyUpdates } from '@/components/assets/quarterly-updates'
 import { AssetDocumentsList } from '@/components/assets/asset-documents-list'
+import { AppraisalSummary } from '@/components/assets/appraisal-summary'
+import { UsdaBenchmarkCard } from '@/components/assets/usda-benchmark-card'
+import { WeatherAlertsCard } from '@/components/assets/weather-alerts-card'
 import type { IssuerUpdateRow, AssetDocumentRow } from '@/types/database'
 
 interface AssetPageProps {
@@ -22,12 +25,11 @@ export default async function AssetPage({ params }: AssetPageProps) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Fetch asset
+  // Fetch asset (include inactive — investors may still hold tokens in delisted assets)
   const { data: asset, error } = await supabase
     .from('assets')
     .select('*')
     .eq('id', id)
-    .eq('is_active', true)
     .single()
 
   if (error || !asset) notFound()
@@ -112,15 +114,9 @@ export default async function AssetPage({ params }: AssetPageProps) {
 
   const updates = (updatesRaw ?? []) as IssuerUpdateRow[]
 
-  // Fetch circulating supply (sum of all holdings for this asset)
-  const { data: holdingsAgg } = await supabase
-    .from('investor_holdings')
-    .select('token_balance')
-    .eq('asset_id', id)
-
-  const circulatingSupply = (holdingsAgg ?? []).reduce(
-    (sum, h) => sum + Number(h.token_balance), 0
-  )
+  // Fetch circulating supply using SECURITY DEFINER function (bypasses RLS to see ALL holdings)
+  const { data: circulatingData } = await supabase.rpc('get_circulating_supply', { p_asset_id: id })
+  const circulatingSupply = Number(circulatingData ?? 0)
 
   // Fetch asset documents
   const { data: docsRaw } = await supabase
@@ -133,6 +129,19 @@ export default async function AssetPage({ params }: AssetPageProps) {
 
   return (
     <div className="space-y-6">
+      {!asset.is_active && (
+        <div className="rounded-lg border border-warning/20 bg-status-warning px-5 py-4 flex items-start gap-3">
+          <svg className="h-5 w-5 text-warning mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <div>
+            <p className="text-sm font-medium text-warning">This asset has been delisted</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              This asset is no longer available for purchase on the marketplace. Your existing holdings are unaffected.
+            </p>
+          </div>
+        </div>
+      )}
       <AssetHeader asset={asset} holding={holding} />
       <AssetStats asset={asset} holding={holding} circulatingSupply={circulatingSupply} />
 
@@ -159,6 +168,25 @@ export default async function AssetPage({ params }: AssetPageProps) {
         </div>
         <div className="space-y-4">
           <AssetDetails asset={asset} circulatingSupply={circulatingSupply} />
+              {asset.third_party_verified && (
+                <AppraisalSummary
+                  appraiserName={(asset as Record<string, unknown>).third_party_appraiser_name as string | null}
+                  appraisalDate={(asset as Record<string, unknown>).third_party_appraisal_date as string | null}
+                  currentValuation={Number(asset.current_valuation)}
+                  totalAcres={asset.total_acres ? Number(asset.total_acres) : null}
+                />
+              )}
+              {asset.state && asset.county && (
+                <UsdaBenchmarkCard
+                  state={asset.state}
+                  county={asset.county}
+                  currentValuation={Number(asset.current_valuation)}
+                  totalAcres={asset.total_acres ? Number(asset.total_acres) : null}
+                />
+              )}
+              {(asset as Record<string, unknown>).latitude && (asset as Record<string, unknown>).longitude && (
+                <WeatherAlertsCard assetId={asset.id} />
+              )}
           <AssetDocumentsList documents={documents} />
         </div>
       </div>

@@ -135,13 +135,13 @@ export function ContractUpload({ assetId, assetName, activeContract }: Props) {
         {uploadedContract ? (
           <>
             {/* Active contract display */}
-            <div className="rounded-lg border border-green-500/20 bg-green-500/5 p-4 space-y-3">
+            <div className="rounded-lg border border-success/20 bg-success/5 p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  <CheckCircle className="h-4 w-4 text-success" />
                   <span className="text-sm font-medium">{uploadedContract.file_name}</span>
                   {uploadedContract.parsed_at && (
-                    <Badge className="text-[10px] bg-primary/10 text-primary gap-1">
+                    <Badge className="text-xs bg-primary/10 text-primary gap-1">
                       <Brain className="h-2.5 w-2.5" />
                       AI Parsed
                     </Badge>
@@ -162,12 +162,12 @@ export function ContractUpload({ assetId, assetName, activeContract }: Props) {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {uploadedContract.tenant_name && (
                   <div>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Tenant</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">Tenant</p>
                     <p className="text-sm font-medium">{uploadedContract.tenant_name}</p>
                   </div>
                 )}
                 <div>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Annual Amount</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Annual Amount</p>
                   <p className="text-sm font-semibold">
                     {uploadedContract.annual_amount
                       ? `$${Number(uploadedContract.annual_amount).toLocaleString()}`
@@ -175,18 +175,18 @@ export function ContractUpload({ assetId, assetName, activeContract }: Props) {
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Frequency</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Frequency</p>
                   <p className="text-sm font-medium">{frequencyLabel(uploadedContract.payment_frequency)}</p>
                 </div>
                 {uploadedContract.escalation_rate && (
                   <div>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Escalation</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">Escalation</p>
                     <p className="text-sm font-medium">{uploadedContract.escalation_rate}%/yr</p>
                   </div>
                 )}
                 {uploadedContract.lease_start_date && (
                   <div>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Start Date</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">Start Date</p>
                     <p className="text-sm font-medium">
                       {new Date(uploadedContract.lease_start_date).toLocaleDateString()}
                     </p>
@@ -194,7 +194,7 @@ export function ContractUpload({ assetId, assetName, activeContract }: Props) {
                 )}
                 {uploadedContract.lease_end_date && (
                   <div>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">End Date</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">End Date</p>
                     <p className="text-sm font-medium">
                       {new Date(uploadedContract.lease_end_date).toLocaleDateString()}
                     </p>

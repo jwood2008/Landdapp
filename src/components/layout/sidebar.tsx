@@ -14,31 +14,47 @@ import {
   Sliders,
   Wallet,
   FileText,
+  ArrowLeftRight,
   BarChart3,
   Coins,
   Sun,
   Moon,
   PanelLeftClose,
   PanelLeft,
+  Sparkles,
+  Zap,
+  CreditCard,
+  Home,
+  UserCheck,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { LogoIcon } from '@/components/assets/logo-icon'
 import { cn } from '@/lib/utils'
+import { useChatStore } from '@/store/chat'
 
 const investorNav = [
   { href: '/dashboard', label: 'Marketplace', icon: Store },
   { href: '/dashboard/portfolio', label: 'Portfolio', icon: Wallet },
+  { href: '/dashboard/transactions', label: 'Transactions', icon: ArrowLeftRight },
   { href: '/dashboard/royalties', label: 'Royalties', icon: Coins },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },
 ]
 
 const issuerNav = [
   { href: '/issuer', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/issuer/marketplace', label: 'Marketplace', icon: Store },
+  { href: '/issuer/portfolio', label: 'Portfolio', icon: Wallet },
   { href: '/issuer/distributions', label: 'Distributions', icon: Coins },
   { href: '/issuer/investors', label: 'My Investors', icon: Users },
+  { href: '/issuer/tenants', label: 'Tenants', icon: UserCheck },
   { href: '/issuer/updates', label: 'Quarterly Updates', icon: FileText },
   { href: '/issuer/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/issuer/settings', label: 'Settings', icon: Settings },
+]
+
+const tenantNav = [
+  { href: '/dashboard/rent', label: 'Rent Payments', icon: CreditCard },
+  { href: '/dashboard/leases', label: 'My Leases', icon: Home },
 ]
 
 const adminNav = [
@@ -48,14 +64,17 @@ const adminNav = [
   { href: '/admin/issue-tokens', label: 'Issue Tokens', icon: Send },
   { href: '/admin/distributions', label: 'Distributions', icon: Coins },
   { href: '/admin/marketplace', label: 'Marketplace', icon: Store },
+  { href: '/admin/oracle', label: 'Oracle', icon: Zap },
   { href: '/admin/platform-settings', label: 'Platform', icon: Sliders },
 ]
 
 const STORAGE_KEY = 'sidebar-collapsed'
 
-export function Sidebar({ userRole }: { userRole: string }) {
+export function Sidebar({ userRole, mobile, isTenant }: { userRole: string; mobile?: boolean; isTenant?: boolean }) {
   const pathname = usePathname()
   const { theme, setTheme } = useTheme()
+  const chatToggle = useChatStore((s) => s.toggle)
+  const chatView = useChatStore((s) => s.view)
   const [collapsed, setCollapsed] = useState(false)
   const [mounted, setMounted] = useState(false)
 
@@ -73,7 +92,7 @@ export function Sidebar({ userRole }: { userRole: string }) {
     })
   }
 
-  const sections =
+  const baseSections =
     userRole === 'admin'
       ? [
           { label: 'Invest', items: investorNav },
@@ -83,11 +102,17 @@ export function Sidebar({ userRole }: { userRole: string }) {
         ? [{ label: 'Issuer Portal', items: issuerNav }]
         : [{ label: 'Navigation', items: investorNav }]
 
+  // Append tenant section if user has active leases
+  const sections = isTenant
+    ? [...baseSections, { label: 'Tenant', items: tenantNav }]
+    : baseSections
+
   return (
     <aside
       className={cn(
         'flex flex-col border-r border-border bg-sidebar transition-all duration-300 ease-in-out',
-        collapsed ? 'w-[68px]' : 'w-64'
+        !mobile && 'hidden lg:flex',
+        mobile ? 'w-full h-full' : collapsed ? 'w-[68px]' : 'w-64'
       )}
     >
       {/* Logo */}
@@ -100,7 +125,7 @@ export function Sidebar({ userRole }: { userRole: string }) {
         </div>
         {!collapsed && (
           <span className="font-[family-name:var(--font-display)] text-[17px] font-semibold tracking-wide text-sidebar-primary whitespace-nowrap overflow-hidden">
-            RWA Platform
+            TierraDex
           </span>
         )}
       </div>
@@ -155,7 +180,22 @@ export function Sidebar({ userRole }: { userRole: string }) {
       </nav>
 
       {/* Footer */}
-      <div className={cn('border-t border-sidebar-border py-3 space-y-2', collapsed ? 'px-2' : 'px-4')}>
+      <div className={cn('border-t border-sidebar-border py-3 space-y-1', collapsed ? 'px-2' : 'px-4')}>
+        <button
+          onClick={chatToggle}
+          title={collapsed ? 'Jarvis' : undefined}
+          className={cn(
+            'flex w-full items-center rounded-lg text-sm font-medium transition-all duration-150',
+            collapsed ? 'justify-center px-0 py-2' : 'gap-3 px-3 py-2',
+            chatView !== 'closed'
+              ? 'bg-sidebar-primary/15 text-sidebar-primary'
+              : 'text-sidebar-primary/50 hover:bg-sidebar-primary/10 hover:text-sidebar-primary'
+          )}
+        >
+          <Sparkles className="h-4 w-4 shrink-0" />
+          {!collapsed && 'Jarvis'}
+        </button>
+
         <button
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           title={collapsed ? (theme === 'dark' ? 'Light Mode' : 'Dark Mode') : undefined}

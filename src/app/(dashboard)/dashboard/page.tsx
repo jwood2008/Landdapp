@@ -12,13 +12,17 @@ export default async function InvestorMarketplacePage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  // Get user email for invitation lookups
+  const userEmail = user.email?.toLowerCase() ?? ''
+
   const [
-    { data: assets },
+    { data: allAssets },
     { data: orders },
     { data: filledOrders },
     { data: settings },
     { data: contracts },
     { data: recentDistributions },
+    { data: myInvitations },
   ] = await Promise.all([
     supabase
       .from('assets')
@@ -28,7 +32,7 @@ export default async function InvestorMarketplacePage() {
     supabase
       .from('marketplace_orders')
       .select('*, assets(asset_name, token_symbol, nav_per_token)')
-      .eq('status', 'open')
+      .in('status', ['open', 'partial'])
       .order('created_at', { ascending: false }),
     supabase
       .from('marketplace_orders')
@@ -51,7 +55,28 @@ export default async function InvestorMarketplacePage() {
       .eq('status', 'completed')
       .order('created_at', { ascending: false })
       .limit(50),
+    // Fetch private asset invitations for this user
+    supabase
+      .from('asset_invitations')
+      .select('asset_id')
+      .eq('email', userEmail)
+      .in('status', ['pending', 'accepted']),
   ])
+
+  // Filter assets: show public assets + private assets the user is invited to
+  const invitedAssetIds = new Set((myInvitations ?? []).map((inv) => (inv as { asset_id: string }).asset_id))
+  // Build set of visible asset IDs (public + invited private)
+  const visibleAssetIds = new Set<string>()
+  const assets = (allAssets ?? []).filter((asset) => {
+    const a = asset as { access_type?: string; id: string }
+    const visible = a.access_type !== 'private' || invitedAssetIds.has(a.id)
+    if (visible) visibleAssetIds.add(a.id)
+    return visible
+  })
+
+  // Filter orders/listings to only include visible assets
+  const visibleOrders = (orders ?? []).filter((o) => visibleAssetIds.has((o as { asset_id: string }).asset_id))
+  const visibleFilledOrders = (filledOrders ?? []).filter((o) => visibleAssetIds.has((o as { asset_id: string }).asset_id))
 
   // Find current user's platform_investor record
   // First try by user_id (set on signup), then fall back to wallet address
@@ -91,19 +116,27 @@ export default async function InvestorMarketplacePage() {
     .eq('is_primary', true)
     .single()
 
+  // Compute available tokens per asset using DB function (bypasses RLS to see ALL holdings):
+  // available = token_supply - owner_retained - SUM(all investor holdings)
+  const { data: availableRows } = await supabase.rpc('get_available_tokens')
+  const availableByAssetId: Record<string, number> = {}
+  for (const row of availableRows ?? []) {
+    availableByAssetId[row.asset_id] = Number(row.available_tokens)
+  }
+
   const isPending = currentInvestor && currentInvestor.kyc_status === 'pending'
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {isPending && (
-        <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-3 flex items-start gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-500/10 mt-0.5">
-            <svg className="h-4 w-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <div className="rounded-lg border border-warning/20 bg-status-warning px-5 py-4 flex items-start gap-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-status-warning mt-0.5">
+            <svg className="h-4 w-4 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
           <div>
-            <p className="text-sm font-medium text-amber-700 dark:text-amber-400">Account pending approval</p>
+            <p className="text-sm font-medium text-warning">Account pending approval</p>
             <p className="text-xs text-muted-foreground mt-0.5">
               Your account is being reviewed by our team. You&apos;ll be able to trade once approved. This usually takes less than 24 hours.
             </p>
@@ -112,13 +145,15 @@ export default async function InvestorMarketplacePage() {
       )}
       <WalletStatusBar walletAddress={custodialWallet?.address ?? null} />
       <MarketplaceBrowser
-        assets={assets ?? []}
-        orders={orders ?? []}
-        filledOrders={filledOrders ?? []}
+        assets={assets}
+        orders={visibleOrders}
+        filledOrders={visibleFilledOrders}
         currentInvestor={currentInvestor}
         settings={settings}
         contracts={(contracts ?? []) as { asset_id: string; tenant_name: string | null; annual_amount: number | null; payment_frequency: string | null; lease_start_date: string | null; lease_end_date: string | null; currency: string }[]}
         distributions={(recentDistributions ?? []) as { asset_id: string; total_amount: number; currency: string; status: string; royalty_period: string | null; created_at: string }[]}
+        hasCustodialWallet={!!custodialWallet}
+        availableByAssetId={availableByAssetId}
       />
     </div>
   )

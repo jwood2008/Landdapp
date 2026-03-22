@@ -112,7 +112,7 @@ export function ContractUpload({ assetId, assetName, existingContract, onContrac
         <FileText className="h-4 w-4 text-muted-foreground" />
         <h2 className="font-semibold text-sm flex-1">Lease Contract</h2>
         {contract ? (
-          <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400 mr-2">
+          <span className="flex items-center gap-1 text-xs text-success mr-2">
             <CheckCircle className="h-3 w-3" /> Parsed
           </span>
         ) : (
@@ -128,9 +128,9 @@ export function ContractUpload({ assetId, assetName, existingContract, onContrac
           {contract && (
             <div className="space-y-3">
               {contract.summary && (
-                <div className="flex items-start gap-2 rounded-md bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 px-3 py-2.5">
-                  <Sparkles className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
-                  <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">{contract.summary}</p>
+                <div className="flex items-start gap-2 rounded-md bg-status-info border border-primary/20 px-3 py-2.5">
+                  <Sparkles className="h-3.5 w-3.5 text-info shrink-0 mt-0.5" />
+                  <p className="text-xs text-info leading-relaxed">{contract.summary}</p>
                 </div>
               )}
 

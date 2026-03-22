@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 
 export const metadata: Metadata = {
-  title: 'Agency Roster — RWA Platform',
+  title: 'Agency Roster — TierraDex',
   description: 'The full team roster powering real-world asset tokenization.',
 }
 
@@ -34,7 +34,7 @@ export default async function AgencyPage() {
         <div className="max-w-6xl mx-auto px-6 py-8">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1 font-medium">RWA Platform</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1 font-medium">TierraDex</p>
               <h1 className="text-3xl font-bold tracking-tight">🏛️ The Agency Roster</h1>
               <p className="text-muted-foreground mt-1">
                 The full team powering real-world asset tokenization on XRPL.
@@ -98,7 +98,7 @@ export default async function AgencyPage() {
 
         <div className="border-t border-border pt-8 pb-4 text-center">
           <p className="text-xs text-muted-foreground">
-            RWA Platform &middot; Wood Land Holdings LLC &middot; Powered by XRPL &middot; WOD Token
+            TierraDex &middot; Wood Land Holdings LLC &middot; Powered by XRPL &middot; WOD Token
           </p>
         </div>
       </div>

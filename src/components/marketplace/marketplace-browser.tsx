@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import {
   Store, TrendingUp, Building2, DollarSign, ArrowUpDown,
   Loader2, ShieldAlert, AlertCircle, ExternalLink, CreditCard, Wallet,
-  Coins, Calendar, MapPin, Users, Repeat,
+  Coins, Calendar, MapPin, Users, Repeat, CheckCircle2, ArrowRight, Copy, Check, Lock, ShieldCheck,
 } from 'lucide-react'
 import Link from 'next/link'
 import { XamanSignModal } from '@/components/admin/xaman-sign-modal'
@@ -31,6 +31,8 @@ interface Asset {
   total_acres: number | null
   ai_rating: number | null
   royalty_frequency: string | null
+  access_type?: string
+  third_party_verified?: boolean
 }
 
 interface ContractInfo {
@@ -58,6 +60,7 @@ interface Order {
   asset_id: string
   side: 'buy' | 'sell'
   token_amount: number
+  filled_amount: number
   price_per_token: number
   currency: string
   status: string
@@ -80,6 +83,8 @@ interface Props {
   settings: Settings | null
   contracts?: ContractInfo[]
   distributions?: DistributionInfo[]
+  hasCustodialWallet?: boolean
+  availableByAssetId?: Record<string, number>
 }
 
 function formatUSD(v: number) {
@@ -102,7 +107,150 @@ function formatFrequency(freq: string | null): string {
   return freq.replace('_', '-').replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
-export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvestor, settings, contracts = [], distributions = [] }: Props) {
+/* ─── Transaction Complete Sheet ─────────────────────────────── */
+
+function TransactionCompleteSheet({
+  tx,
+  onClose,
+  isTestnet = false,
+}: {
+  tx: {
+    hash: string
+    tokenAmount: number
+    tokenSymbol: string
+    assetName: string
+    pricePerToken: number
+    totalCost: number
+    currency: string
+    side: 'buy' | 'sell'
+    sellOrderRemaining?: number
+  } | null
+  onClose: () => void
+  isTestnet?: boolean
+}) {
+  const [copied, setCopied] = useState(false)
+  const router = useRouter()
+
+  if (!tx) return null
+
+  const explorerBase = isTestnet
+    ? 'https://testnet.xrpl.org/transactions/'
+    : 'https://livenet.xrpl.org/transactions/'
+
+  function copyHash() {
+    navigator.clipboard.writeText(tx!.hash)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <Sheet open={!!tx} onOpenChange={() => onClose()}>
+      <SheetContent side="bottom" className="rounded-t-2xl px-0 pb-8 sm:max-w-lg sm:mx-auto">
+        <div className="flex flex-col items-center px-6 pt-2">
+          {/* Success animation */}
+          <div className="relative mb-6">
+            <div className="absolute inset-0 rounded-full bg-success/20 animate-ping" style={{ animationDuration: '1.5s', animationIterationCount: '1' }} />
+            <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-success/10 ring-4 ring-success/20">
+              <CheckCircle2 className="h-10 w-10 text-success" />
+            </div>
+          </div>
+
+          <SheetHeader className="text-center space-y-1 mb-8">
+            <SheetTitle className="text-xl font-semibold tracking-tight">
+              Transaction Complete
+            </SheetTitle>
+            <SheetDescription className="text-sm text-muted-foreground">
+              Your {tx.side === 'buy' ? 'purchase' : 'sale'} has been confirmed on the XRPL
+            </SheetDescription>
+          </SheetHeader>
+
+          {/* Token amount highlight */}
+          <div className="mb-8 flex flex-col items-center">
+            <p className="text-4xl font-bold tracking-tight tabular-nums">
+              {tx.side === 'buy' ? '+' : '-'}{tx.tokenAmount.toLocaleString()}
+            </p>
+            <p className="text-lg font-medium text-muted-foreground mt-1">
+              {tx.tokenSymbol} tokens
+            </p>
+          </div>
+
+          {/* Transaction details card */}
+          <div className="w-full rounded-xl border border-border bg-card-inset p-5 space-y-4 mb-6">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Asset</span>
+              <span className="text-sm font-medium">{tx.assetName}</span>
+            </div>
+            <div className="h-px bg-border" />
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Price per token</span>
+              <span className="text-sm font-mono font-medium tabular-nums">{formatUSD(tx.pricePerToken)}</span>
+            </div>
+            <div className="h-px bg-border" />
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">
+                {tx.side === 'buy' ? 'Total paid' : 'Total received'}
+              </span>
+              <span className="text-sm font-mono font-semibold tabular-nums">
+                {formatUSD(tx.totalCost)}
+              </span>
+            </div>
+            <div className="h-px bg-border" />
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Status</span>
+              <Badge className="text-xs bg-status-success text-status-success-foreground border-0 rounded-full px-3">
+                Confirmed
+              </Badge>
+            </div>
+            <div className="h-px bg-border" />
+            <div className="space-y-1.5">
+              <span className="text-sm text-muted-foreground">Transaction hash</span>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 truncate rounded-md bg-muted/50 px-3 py-2 font-mono text-xs text-muted-foreground">
+                  {tx.hash}
+                </code>
+                <button
+                  onClick={copyHash}
+                  className="shrink-0 rounded-md p-2 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors"
+                  title="Copy hash"
+                >
+                  {copied ? <Check className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="w-full space-y-3">
+            <a
+              href={`${explorerBase}${tx.hash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-card px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted/50"
+            >
+              <ExternalLink className="h-4 w-4" />
+              View on XRPL Explorer
+            </a>
+            <Button
+              onClick={() => { onClose(); router.push('/dashboard/portfolio') }}
+              className="w-full gap-2 bg-success hover:bg-success/90 text-success-foreground"
+            >
+              View Portfolio
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+            <button
+              onClick={onClose}
+              className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+            >
+              Continue trading
+            </button>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
+  )
+}
+
+export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvestor, settings, contracts = [], distributions = [], hasCustodialWallet = false, availableByAssetId = {} }: Props) {
   const router = useRouter()
   const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null)
   const [orderSide, setOrderSide] = useState<'buy' | 'sell'>('buy')
@@ -111,11 +259,33 @@ export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvest
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [completedTx, setCompletedTx] = useState<{
+    hash: string
+    tokenAmount: number
+    tokenSymbol: string
+    assetName: string
+    pricePerToken: number
+    totalCost: number
+    currency: string
+    side: 'buy' | 'sell'
+    sellOrderRemaining?: number
+  } | null>(null)
   const [detailAssetId, setDetailAssetId] = useState<string | null>(null)
   const [marketTab, setMarketTab] = useState<MarketTab>('all')
+  // Optimistic: track order IDs that have been fully filled so they vanish instantly
+  const [filledOrderIds, setFilledOrderIds] = useState<Set<string>>(new Set())
+  // Optimistic: track partial fills (orderId → additional filled amount) so listings update instantly
+  const [optimisticFills, setOptimisticFills] = useState<Record<string, number>>({})
 
-  // Payment method: moonpay (custodial, primary) or xaman (self-custody)
-  const [paymentMethod, setPaymentMethod] = useState<'moonpay' | 'xaman'>('moonpay')
+  // Clear optimistic state when server data refreshes (server data is now canonical)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { setFilledOrderIds(new Set()); setOptimisticFills({}) }, [orders])
+
+  // Supply limit popup
+  const [supplyError, setSupplyError] = useState<{ requested: number; available: number; symbol: string } | null>(null)
+
+  // Payment method: platform (custodial wallet — XRP payment + token delivery) or xaman (self-custody QR signing)
+  const [paymentMethod, setPaymentMethod] = useState<'platform' | 'xaman'>('platform')
   const [showMoonpayModal, setShowMoonpayModal] = useState(false)
 
   // Xaman signing state
@@ -189,9 +359,12 @@ export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvest
     ? filledOrders.filter((o) => o.asset_id === selectedAssetId)
     : []
 
+  // Filter out optimistically filled orders
+  const liveOrders = orders.filter((o) => !filledOrderIds.has(o.id))
+
   // Open orders (pending on DEX — mainly sell orders)
   const assetOrders = selectedAssetId
-    ? orders.filter((o) => o.asset_id === selectedAssetId)
+    ? liveOrders.filter((o) => o.asset_id === selectedAssetId)
     : []
   const buyOrders = assetOrders
     .filter((o) => o.side === 'buy')
@@ -200,21 +373,29 @@ export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvest
     .filter((o) => o.side === 'sell')
     .sort((a, b) => a.price_per_token - b.price_per_token)
 
-  // Price is always the asset's NAV per token — not user-editable
-  const price = selectedAsset ? String(selectedAsset.nav_per_token) : '0'
+  // Price: locked to NAV for primary buys, editable for secondary sells
+  const [customPrice, setCustomPrice] = useState('')
+  const [showTradeSheet, setShowTradeSheet] = useState(false)
+  const navPrice = selectedAsset ? selectedAsset.nav_per_token : 0
+  const isCustomPriceAllowed = orderSide === 'sell'
+  const price = isCustomPriceAllowed && customPrice ? customPrice : String(navPrice)
   const totalValue = parseFloat(amount || '0') * parseFloat(price || '0')
+
+  // Premium/discount vs NAV
+  const priceNum = parseFloat(price || '0')
+  const priceDiffPercent = navPrice > 0 ? ((priceNum - navPrice) / navPrice) * 100 : 0
 
   if (!settings?.marketplace_enabled) {
     return (
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Marketplace</h1>
-          <p className="text-muted-foreground">Secondary market for tokenized assets</p>
+          <p className="text-base text-muted-foreground">Secondary market for tokenized assets</p>
         </div>
         <Card>
           <CardContent className="py-12 text-center">
-            <Store className="mx-auto h-10 w-10 text-muted-foreground/40 mb-3" />
-            <p className="text-muted-foreground">The marketplace is currently disabled by the platform administrator.</p>
+            <Store className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" />
+            <p className="text-base text-muted-foreground">The marketplace is currently disabled by the platform administrator.</p>
           </CardContent>
         </Card>
       </div>
@@ -224,10 +405,26 @@ export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvest
   async function submitOrder() {
     if (!selectedAssetId || !amount || !price || !selectedAsset || !currentInvestor) return
 
-    // MoonPay flow for buy orders — open modal instead of Xaman
-    if (orderSide === 'buy' && paymentMethod === 'moonpay') {
-      setShowMoonpayModal(true)
-      return
+    // Check supply limit for primary market buys
+    if (orderSide === 'buy') {
+      const requestedAmount = parseFloat(amount)
+      // For secondary buys, the sell order limits it. For primary buys, check supply.
+      const hasSecondarySeller = liveOrders.some(
+        (o) => o.asset_id === selectedAssetId && o.side === 'sell' && (o.status === 'open' || o.status === 'partial')
+          && o.investor_id !== currentInvestor?.id
+          && (o.token_amount - (o.filled_amount ?? 0)) > 0
+      )
+      if (!hasSecondarySeller) {
+        const available = availableByAssetId[selectedAssetId] ?? selectedAsset.token_supply
+        if (requestedAmount > available) {
+          setSupplyError({
+            requested: requestedAmount,
+            available,
+            symbol: selectedAsset.token_symbol,
+          })
+          return
+        }
+      }
     }
 
     setSubmitting(true)
@@ -255,38 +452,89 @@ export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvest
 
       if (!orderId) throw new Error('Order creation failed')
 
-      // 2. Primary market buy — issuer sends tokens directly to investor (instant)
+      // 2. Platform/custodial buy — check if secondary (matching sell order) or primary (from issuer)
       if (orderSide === 'buy' && paymentMethod !== 'xaman') {
         try {
-          const buyRes = await fetch('/api/wallet/primary-buy', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              orderId,
-              tokenAmount: parseFloat(amount),
-              pricePerToken: parseFloat(price),
-              tokenSymbol: selectedAsset.token_symbol,
-              issuerWallet: selectedAsset.issuer_wallet,
-              currency: payCurrency,
-            }),
-          })
+          // Check for an open sell order on this asset (secondary market)
+          const matchingSellOrder = liveOrders.find(
+            (o) => o.asset_id === selectedAssetId && o.side === 'sell' && (o.status === 'open' || o.status === 'partial')
+              && o.investor_id !== currentInvestor?.id // don't match your own sell order
+              && (o.token_amount - (o.filled_amount ?? 0)) > 0
+          )
+
+          let buyRes: Response
+          if (matchingSellOrder) {
+            // Secondary market buy — use the SELLER'S listed currency so the DEX offers match
+            buyRes = await fetch('/api/wallet/secondary-buy', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                buyOrderId: orderId,
+                sellOrderId: matchingSellOrder.id,
+                tokenAmount: parseFloat(amount),
+                tokenSymbol: selectedAsset.token_symbol,
+                issuerWallet: selectedAsset.issuer_wallet,
+                pricePerToken: matchingSellOrder.price_per_token,
+                currency: matchingSellOrder.currency,
+              }),
+            })
+          } else {
+            // Primary market buy — issuer sends tokens directly to investor
+            buyRes = await fetch('/api/wallet/primary-buy', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                orderId,
+                tokenAmount: parseFloat(amount),
+                pricePerToken: parseFloat(price),
+                tokenSymbol: selectedAsset.token_symbol,
+                issuerWallet: selectedAsset.issuer_wallet,
+                currency: payCurrency,
+              }),
+            })
+          }
           const buyData = await buyRes.json()
 
           if (buyData.hash) {
-            setSuccess(`Purchased ${amount} ${selectedAsset.token_symbol}! Tx: ${buyData.hash.slice(0, 12)}...`)
+            if (orderId) setFilledOrderIds((prev) => new Set(prev).add(orderId))
+            if (matchingSellOrder) {
+              if (!buyData.sellOrderRemaining || buyData.sellOrderRemaining <= 0) {
+                // Fully filled — remove listing entirely
+                setFilledOrderIds((prev) => new Set(prev).add(matchingSellOrder.id))
+              } else {
+                // Partially filled — optimistically reduce the remaining count
+                setOptimisticFills((prev) => ({
+                  ...prev,
+                  [matchingSellOrder.id]: (prev[matchingSellOrder.id] ?? 0) + parseFloat(amount),
+                }))
+              }
+            }
+            // For secondary buys, use the seller's currency; for primary, use buyer's
+            const txCurrency = matchingSellOrder ? (matchingSellOrder.currency || payCurrency) : payCurrency
+            const txPrice = matchingSellOrder ? matchingSellOrder.price_per_token : parseFloat(price)
+            setCompletedTx({
+              hash: buyData.hash,
+              tokenAmount: parseFloat(amount),
+              tokenSymbol: selectedAsset.token_symbol,
+              assetName: selectedAsset.asset_name,
+              pricePerToken: txPrice,
+              totalCost: parseFloat(amount) * txPrice,
+              currency: txCurrency,
+              side: 'buy',
+              sellOrderRemaining: buyData.sellOrderRemaining,
+            })
             setAmount('')
+            setSelectedAssetId(null)
             router.refresh()
-            setTimeout(() => setSuccess(null), 5000)
             return
           }
 
           if (buyData.error) {
-            // Show the error to the user — don't silently fail
             throw new Error(buyData.error)
           }
         } catch (err) {
           if (err instanceof Error && err.message) {
-            throw err // Re-throw with the specific error message
+            throw err
           }
           throw new Error('Purchase failed. Please try again.')
         }
@@ -311,8 +559,10 @@ export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvest
           const tradeData = await tradeRes.json()
 
           if (tradeData.hash) {
+            if (orderId) setFilledOrderIds((prev) => new Set(prev).add(orderId))
             setSuccess(`Sell order placed on XRPL! Hash: ${tradeData.hash.slice(0, 12)}...`)
             setAmount('')
+            setSelectedAssetId(null)
             router.refresh()
             setTimeout(() => setSuccess(null), 5000)
             return
@@ -350,25 +600,32 @@ export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvest
         }
 
         if (hasTrustline) {
-          // Trust line exists — go directly to payment (1 signing)
-          console.log('[xaman-buy] Trust line exists, skipping to payment')
-          const totalCost = buyDetails.tokenAmount * buyDetails.pricePerToken
+          // Trust line exists — create Payment QR so investor pays issuer
+          console.log('[xaman-buy] Trust line exists, creating payment QR')
           try {
+            const totalCostUsd = buyDetails.tokenAmount * buyDetails.pricePerToken
             const payRes = await fetch('/api/xrpl/create-payment', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                investorAddress: currentInvestor.wallet_address,
-                issuerWallet: selectedAsset.issuer_wallet,
-                amount: totalCost,
-                payCurrency,
+                investorAddress: buyDetails.investorAddress,
+                issuerWallet: buyDetails.issuerWallet,
+                amount: totalCostUsd,
+                payCurrency: payCurrency,
               }),
             })
             const payData = await payRes.json()
-            if (payData.error) throw new Error(payData.error)
 
             if (payData.uuid) {
-              setPendingXamanPayment({ ...buyDetails, payCurrency })
+              setPendingXamanPayment({
+                orderId: buyDetails.orderId,
+                tokenAmount: buyDetails.tokenAmount,
+                tokenSymbol: buyDetails.tokenSymbol,
+                issuerWallet: buyDetails.issuerWallet,
+                pricePerToken: buyDetails.pricePerToken,
+                investorAddress: buyDetails.investorAddress,
+                payCurrency: payCurrency,
+              })
               setXamanUuid(payData.uuid)
               setXamanQrUrl(payData.qrUrl)
               setXamanDeepLink(payData.deepLink)
@@ -377,13 +634,15 @@ export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvest
               if (payData.deepLink) sessionStorage.setItem('xamanDeepLink', payData.deepLink)
               setSubmitting(false)
               return
+            } else {
+              throw new Error(payData.error ?? 'Failed to create payment request')
             }
           } catch (err) {
-            console.error('[xaman-buy] Payment creation failed:', err)
-            throw new Error(err instanceof Error ? err.message : 'Failed to create payment request.')
+            console.error('[xaman-buy] Payment QR creation failed:', err)
+            throw new Error(err instanceof Error ? err.message : 'Failed to create payment.')
           }
         } else {
-          // No trust line — need TrustSet first (2 signings)
+          // No trust line — 1 QR for TrustSet, then auto-deliver after signing
           try {
             const trustRes = await fetch('/api/xrpl/create-trustline', {
               method: 'POST',
@@ -414,34 +673,14 @@ export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvest
           }
         }
       } else {
-        // SELL via Xaman: OfferCreate on DEX (secondary market)
-        try {
-          const offerRes = await fetch('/api/xrpl/create-offer', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              orderId,
-              investorAddress: currentInvestor.wallet_address,
-              side: orderSide,
-              tokenAmount: parseFloat(amount),
-              pricePerToken: parseFloat(price),
-              tokenSymbol: selectedAsset.token_symbol,
-              issuerWallet: selectedAsset.issuer_wallet,
-              currency: payCurrency,
-            }),
-          })
-          const offerData = await offerRes.json()
-
-          if (offerData.uuid) {
-            setXamanUuid(offerData.uuid)
-            setXamanQrUrl(offerData.qrUrl)
-            setXamanDeepLink(offerData.deepLink)
-            setSubmitting(false)
-            return
-          }
-        } catch {
-          // On-chain offer failed
-        }
+        // SELL via Xaman: Just list on marketplace — no XRPL transaction needed.
+        // Tokens stay in the seller's wallet until a buyer matches the order.
+        setSuccess(`${parseFloat(amount)} ${selectedAsset.token_symbol} listed for sale at $${parseFloat(price)}/token. Your tokens remain in your wallet until sold.`)
+        setAmount('')
+        router.refresh()
+        setTimeout(() => setSuccess(null), 5000)
+        setSubmitting(false)
+        return
       }
 
       setSuccess(`${orderSide === 'buy' ? 'Buy' : 'Sell'} order placed successfully`)
@@ -473,38 +712,29 @@ export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvest
     sessionStorage.removeItem('xamanDeepLink')
     sessionStorage.removeItem('pendingXamanPayment')
 
-    // Step 1 complete: TrustSet signed — now prompt investor to pay
+    // Step 1 complete: TrustSet signed — now create Payment QR so investor pays issuer
     if (pendingXamanBuy) {
       const buy = pendingXamanBuy
       setPendingXamanBuy(null)
       setError(null)
-      setSuccess('Trust line confirmed! Now sign the payment...')
-      console.log('[xaman-buy] TrustSet signed, creating payment payload:', buy)
-
-      const totalCost = buy.tokenAmount * buy.pricePerToken
-      const currency = payCurrency || 'XRP'
+      setSuccess('Trust line confirmed! Now sign the XRP payment...')
+      console.log('[xaman-buy] TrustSet signed, creating payment QR:', buy)
 
       try {
+        const totalCostUsd = buy.tokenAmount * buy.pricePerToken
         const payRes = await fetch('/api/xrpl/create-payment', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             investorAddress: buy.investorAddress,
             issuerWallet: buy.issuerWallet,
-            amount: totalCost,
-            payCurrency: currency,
+            amount: totalCostUsd,
+            payCurrency: payCurrency,
           }),
         })
         const payData = await payRes.json()
 
-        if (payData.error) {
-          setSuccess(null)
-          setError(payData.error)
-          return
-        }
-
         if (payData.uuid) {
-          // Save payment details for after Payment is signed
           setPendingXamanPayment({
             orderId: buy.orderId,
             tokenAmount: buy.tokenAmount,
@@ -512,7 +742,7 @@ export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvest
             issuerWallet: buy.issuerWallet,
             pricePerToken: buy.pricePerToken,
             investorAddress: buy.investorAddress,
-            payCurrency: currency,
+            payCurrency: payCurrency,
           })
           setXamanUuid(payData.uuid)
           setXamanQrUrl(payData.qrUrl)
@@ -522,11 +752,13 @@ export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvest
           if (payData.deepLink) sessionStorage.setItem('xamanDeepLink', payData.deepLink)
           setSuccess(null)
           return
+        } else {
+          throw new Error(payData.error ?? 'Failed to create payment request')
         }
       } catch (err) {
-        console.error('[xaman-buy] Payment payload creation failed:', err)
+        console.error('[xaman-buy] Payment QR creation failed:', err)
         setSuccess(null)
-        setError('Failed to create payment request. Please try again.')
+        setError(err instanceof Error ? err.message : 'Failed to create payment request')
       }
 
       setAmount('')
@@ -561,11 +793,23 @@ export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvest
         console.log('[xaman-buy] primary-buy-xaman response:', buyData)
 
         if (buyData.hash) {
-          setSuccess(`Purchased ${pay.tokenAmount} ${pay.tokenSymbol}! Tx: ${buyData.hash.slice(0, 12)}...`)
+          if (pay.orderId) setFilledOrderIds((prev) => new Set(prev).add(pay.orderId))
+          const matchedAsset = assets.find((a) => a.token_symbol === pay.tokenSymbol)
+          setCompletedTx({
+            hash: buyData.hash,
+            tokenAmount: pay.tokenAmount,
+            tokenSymbol: pay.tokenSymbol,
+            assetName: matchedAsset?.asset_name ?? pay.tokenSymbol,
+            pricePerToken: pay.pricePerToken,
+            totalCost: pay.tokenAmount * pay.pricePerToken,
+            currency: pay.payCurrency,
+            side: 'buy',
+          })
           setError(null)
+          setSelectedAssetId(null)
         } else {
           setSuccess(null)
-          setError(buyData.error ?? 'Token delivery failed after payment')
+          setError(buyData.error ?? 'Token delivery failed')
         }
       } catch (err) {
         console.error('[xaman-buy] Token delivery error:', err)
@@ -581,27 +825,11 @@ export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvest
       return
     }
 
-    // Normal sell order signed
+    // Fallback: other Xaman sign completions (e.g. legacy buy offers)
     setPendingOrderId(null)
-    setSuccess('Order placed and signed on XRPL! Portfolio syncing...')
+    setSuccess('Order placed and signed on XRPL!')
     setAmount('')
     router.refresh()
-
-    // Auto-sync holdings after a short delay
-    if (currentInvestor?.wallet_address) {
-      setTimeout(async () => {
-        try {
-          await fetch('/api/sync-holdings', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ walletAddress: currentInvestor.wallet_address }),
-          })
-        } catch {
-          // Silent
-        }
-      }, 4000)
-    }
-
     setTimeout(() => setSuccess(null), 5000)
   }
 
@@ -634,20 +862,315 @@ export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvest
 
   // My orders
   const myOrders = currentInvestor
-    ? orders.filter((o) => o.investor_id === currentInvestor.id)
+    ? liveOrders.filter((o) => o.investor_id === currentInvestor.id)
     : []
 
   // Secondary market listings — open sell orders with enriched asset info
-  const secondaryListings = orders
-    .filter((o) => o.side === 'sell' && o.status === 'open')
+  // Calculate remaining tokens: token_amount - filled_amount - optimistic fills
+  const secondaryListings = liveOrders
+    .filter((o) => o.side === 'sell' && (o.status === 'open' || o.status === 'partial'))
     .map((o) => {
       const asset = assets.find((a) => a.id === o.asset_id)
-      return { ...o, asset: asset ?? null }
+      const optimisticExtra = optimisticFills[o.id] ?? 0
+      const remaining = o.token_amount - (o.filled_amount ?? 0) - optimisticExtra
+      return { ...o, remaining_tokens: remaining, asset: asset ?? null }
     })
-    .filter((o) => o.asset !== null)
+    .filter((o) => o.asset !== null && o.remaining_tokens > 0)
+
+  const renderOrderForm = () => {
+    if (!selectedAsset) return null
+    if (!currentInvestor) {
+      return (
+        <div className="rounded-lg border border-warning/20 bg-status-warning p-4 text-center">
+          <ShieldAlert className="mx-auto h-6 w-6 text-warning mb-2" />
+          <p className="text-sm text-warning">
+            You must be an approved platform investor to trade.
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">Contact your platform administrator.</p>
+        </div>
+      )
+    }
+    if (currentInvestor.kyc_status !== 'verified') {
+      return (
+        <div className="rounded-lg border border-warning/20 bg-status-warning p-4 text-center">
+          <ShieldAlert className="mx-auto h-6 w-6 text-warning mb-2" />
+          <p className="text-sm text-warning">
+            Your KYC verification is pending.
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">You can trade once verified.</p>
+        </div>
+      )
+    }
+    return (
+      <div className="space-y-5">
+        {/* Side toggle */}
+        <div className="grid grid-cols-2 gap-1 rounded-lg border border-border p-1">
+          <button
+            onClick={() => { setOrderSide('buy'); setCustomPrice('') }}
+            className={`rounded-md py-2 text-sm font-medium transition-colors ${
+              orderSide === 'buy'
+                ? 'bg-success text-white'
+                : 'text-muted-foreground hover:bg-muted/30'
+            }`}
+          >
+            Buy
+          </button>
+          <button
+            onClick={() => { setOrderSide('sell'); setCustomPrice(String(navPrice)) }}
+            className={`rounded-md py-2 text-sm font-medium transition-colors ${
+              orderSide === 'sell'
+                ? 'bg-destructive text-white'
+                : 'text-muted-foreground hover:bg-muted/30'
+            }`}
+          >
+            Sell
+          </button>
+        </div>
+
+        {/* Payment/signing method */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground">
+            {orderSide === 'buy' ? 'Payment Method' : 'Signing Method'}
+          </label>
+          <div className="grid grid-cols-2 gap-1 rounded-lg border border-border p-1">
+            <button
+              onClick={() => setPaymentMethod('platform')}
+              className={`rounded-md py-2 text-xs font-medium transition-colors flex items-center justify-center gap-1.5 ${
+                paymentMethod === 'platform'
+                  ? orderSide === 'buy' ? 'bg-success text-white' : 'bg-destructive text-white'
+                  : 'text-muted-foreground hover:bg-muted/30'
+              }`}
+            >
+              <Coins className="h-3.5 w-3.5" />
+              Platform Wallet
+            </button>
+            <button
+              onClick={() => setPaymentMethod('xaman')}
+              className={`rounded-md py-2 text-xs font-medium transition-colors flex items-center justify-center gap-1.5 ${
+                paymentMethod === 'xaman'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:bg-muted/30'
+              }`}
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              Xaman Wallet
+            </button>
+          </div>
+          {paymentMethod === 'platform' && (
+            <p className="text-xs text-muted-foreground">
+              {orderSide === 'buy'
+                ? 'Pay XRP from your platform wallet. Issuer receives payment, you receive tokens.'
+                : 'List tokens for sale on the XRPL DEX via your platform wallet.'}
+            </p>
+          )}
+          {paymentMethod === 'xaman' && (
+            <p className="text-xs text-muted-foreground">Sign with your own XRPL wallet via Xaman app.</p>
+          )}
+        </div>
+
+        {/* Receive currency toggle — hidden for secondary buys (backend auto-handles currency) */}
+        {(() => {
+          const hasSecondarySell = orderSide === 'buy' && liveOrders.some(
+            (o) => o.asset_id === selectedAssetId && o.side === 'sell' && (o.status === 'open' || o.status === 'partial')
+              && o.investor_id !== currentInvestor?.id && (o.token_amount - (o.filled_amount ?? 0)) > 0
+          )
+          if (hasSecondarySell) return null // Currency handled by backend based on seller preference
+          return null // Hide for now — primary buys always use XRP
+        })()}
+        {orderSide === 'sell' && (
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">Receive in</label>
+            <div className="grid grid-cols-2 gap-1 rounded-lg border border-border p-1">
+              <button
+                onClick={() => setPayCurrency('RLUSD')}
+                className={`rounded-md py-1.5 text-xs font-medium transition-colors ${
+                  payCurrency === 'RLUSD'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-muted/30'
+                }`}
+              >
+                RLUSD
+              </button>
+              <button
+                onClick={() => setPayCurrency('XRP')}
+                className={`rounded-md py-1.5 text-xs font-medium transition-colors ${
+                  payCurrency === 'XRP'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-muted/30'
+                }`}
+              >
+                XRP
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground">Token Amount</label>
+          {(() => {
+            const secondarySell = orderSide === 'buy' ? liveOrders.find(
+              (o) => o.asset_id === selectedAssetId && o.side === 'sell' && (o.status === 'open' || o.status === 'partial')
+                && o.investor_id !== currentInvestor?.id
+                && (o.token_amount - (o.filled_amount ?? 0)) > 0
+            ) : null
+            const maxFromSeller = secondarySell
+              ? secondarySell.token_amount - (secondarySell.filled_amount ?? 0) - (optimisticFills[secondarySell.id] ?? 0)
+              : undefined
+            const primaryAvailable = selectedAssetId ? (availableByAssetId[selectedAssetId] ?? null) : null
+            const maxAvailable = maxFromSeller ?? primaryAvailable
+            return (
+              <>
+                <input
+                  type="number"
+                  className="input w-full font-mono"
+                  placeholder="0"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  min="0"
+                  max={maxAvailable ?? undefined}
+                />
+                {orderSide === 'buy' && maxFromSeller && secondarySell && (
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-warning">
+                      {maxFromSeller.toLocaleString()} available from seller
+                    </p>
+                    <button
+                      type="button"
+                      className="text-xs text-primary hover:underline"
+                      onClick={() => setAmount(String(maxFromSeller))}
+                    >
+                      Max
+                    </button>
+                  </div>
+                )}
+                {orderSide === 'buy' && !maxFromSeller && primaryAvailable !== null && (
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-muted-foreground">
+                      {primaryAvailable.toLocaleString()} of {selectedAsset.token_supply.toLocaleString()} tokens available
+                    </p>
+                    {primaryAvailable > 0 && (
+                      <button
+                        type="button"
+                        className="text-xs text-primary hover:underline"
+                        onClick={() => setAmount(String(primaryAvailable))}
+                      >
+                        Max
+                      </button>
+                    )}
+                  </div>
+                )}
+                {maxFromSeller && orderSide === 'buy' && parseFloat(amount) > maxFromSeller && (
+                  <p className="text-xs text-destructive">
+                    Cannot buy more than {maxFromSeller.toLocaleString()} tokens from this listing.
+                  </p>
+                )}
+              </>
+            )
+          })()}
+        </div>
+
+        {/* Price */}
+        <div className="rounded-lg bg-muted/40 p-3">
+          <p className="text-xs text-muted-foreground">Price per Token</p>
+          {isCustomPriceAllowed ? (
+            <>
+              <div className="flex items-center gap-1.5 mt-1">
+                <span className="text-lg font-bold text-muted-foreground">$</span>
+                <input
+                  type="number"
+                  step="0.0001"
+                  min="0.0001"
+                  value={customPrice}
+                  onChange={(e) => setCustomPrice(e.target.value)}
+                  placeholder={navPrice.toFixed(4)}
+                  className="w-full bg-background rounded-md border border-border px-2.5 py-1.5 text-lg font-bold font-mono outline-none focus:ring-1 focus:ring-ring"
+                />
+              </div>
+              <div className="flex items-center justify-between mt-1.5">
+                <p className="text-[11px] text-muted-foreground">
+                  NAV: ${navPrice.toFixed(4)}
+                </p>
+                {priceNum > 0 && Math.abs(priceDiffPercent) > 0.01 && (
+                  <span className={`text-[11px] font-semibold ${
+                    priceDiffPercent > 0
+                      ? 'text-success'
+                      : 'text-destructive'
+                  }`}>
+                    {priceDiffPercent > 0 ? '+' : ''}{priceDiffPercent.toFixed(1)}% {priceDiffPercent > 0 ? 'above' : 'below'} NAV
+                  </span>
+                )}
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-lg font-bold font-mono mt-0.5">${selectedAsset.nav_per_token.toFixed(4)}</p>
+              <p className="text-[11px] text-muted-foreground">Set by asset NAV</p>
+            </>
+          )}
+        </div>
+
+        {totalValue > 0 && (
+          <div className="rounded-lg bg-muted/40 p-3 text-center">
+            <p className="text-xs text-muted-foreground">Total Cost (USD)</p>
+            <p className="text-lg font-bold mt-0.5">{formatUSD(totalValue)}</p>
+            {payCurrency === 'XRP' && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Paid in XRP at live market rate
+              </p>
+            )}
+            {payCurrency === 'RLUSD' && (
+              <p className="text-[11px] text-muted-foreground">Paid in RLUSD (1:1 USD)</p>
+            )}
+          </div>
+        )}
+
+        {error && (
+          <div className="flex items-center gap-2 text-xs text-destructive">
+            <AlertCircle className="h-3.5 w-3.5" />
+            {error}
+          </div>
+        )}
+        {success && (
+          <p className="text-xs text-success">{success}</p>
+        )}
+
+        <Button
+          onClick={submitOrder}
+          disabled={submitting || !amount || parseFloat(amount) <= 0 || (() => {
+            if (orderSide !== 'buy') return false
+            const sell = liveOrders.find(
+              (o) => o.asset_id === selectedAssetId && o.side === 'sell' && o.status === 'open'
+                && o.investor_id !== currentInvestor?.id
+            )
+            return sell ? parseFloat(amount) > sell.token_amount : false
+          })()}
+          className={`w-full gap-2 ${
+            orderSide === 'buy'
+              ? 'bg-success hover:bg-success/90'
+              : 'bg-destructive hover:bg-destructive/90'
+          }`}
+        >
+          {submitting ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <DollarSign className="h-4 w-4" />
+          )}
+          {submitting
+            ? 'Placing order...'
+            : `${orderSide === 'buy' ? 'Buy' : 'Sell'} ${selectedAsset.token_symbol}`}
+        </Button>
+
+        {orderSide === 'buy' && totalValue > 0 && (
+          <p className="text-xs text-center text-muted-foreground">
+            Total: ~{formatUSD(totalValue)} from your platform wallet
+          </p>
+        )}
+      </div>
+    )
+  }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Xaman signing modal for on-chain DEX offers */}
       {xamanUuid && (
         <XamanSignModal
@@ -678,15 +1201,58 @@ export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvest
         />
       )}
 
+      {/* Transaction Complete Sheet */}
+      <TransactionCompleteSheet
+        tx={completedTx}
+        onClose={() => setCompletedTx(null)}
+        isTestnet={true}
+      />
+
+      {/* Supply limit error popup */}
+      {supplyError && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setSupplyError(null)} />
+          <div className="relative mx-4 w-full max-w-sm animate-in rounded-xl border border-border bg-card p-6 shadow-2xl">
+            <div className="flex flex-col items-center text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 mb-4">
+                <AlertCircle className="h-6 w-6 text-destructive" />
+              </div>
+              <h3 className="text-lg font-semibold">Not Enough Tokens</h3>
+              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                You requested <span className="font-semibold text-foreground">{supplyError.requested.toLocaleString()} {supplyError.symbol}</span> but
+                only <span className="font-semibold text-foreground">{supplyError.available.toLocaleString()}</span> tokens are available for purchase.
+              </p>
+              {supplyError.available > 0 && (
+                <button
+                  onClick={() => {
+                    setAmount(String(supplyError.available))
+                    setSupplyError(null)
+                  }}
+                  className="mt-4 w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                  Buy {supplyError.available.toLocaleString()} {supplyError.symbol} instead
+                </button>
+              )}
+              <button
+                onClick={() => setSupplyError(null)}
+                className="mt-2 w-full rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/50"
+              >
+                {supplyError.available > 0 ? 'Cancel' : 'Got it'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Marketplace</h1>
-        <p className="text-muted-foreground">
+        <p className="text-base text-muted-foreground">
           Buy and sell tokenized assets within the permission domain
         </p>
       </div>
 
       {/* Market tabs */}
-      <div className="flex items-center gap-1 rounded-lg border border-border p-1 w-fit">
+      <div className="flex items-center gap-1 rounded-xl border border-border p-1.5 w-fit">
         {([
           { key: 'all' as MarketTab, label: 'All', icon: Store },
           { key: 'primary' as MarketTab, label: 'Primary', icon: Building2 },
@@ -695,16 +1261,16 @@ export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvest
           <button
             key={key}
             onClick={() => setMarketTab(key)}
-            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+            className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-150 ${
               marketTab === key
-                ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:bg-muted/50'
+                ? 'bg-primary text-primary-foreground shadow-sm'
+                : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
             }`}
           >
-            <Icon className="h-3.5 w-3.5" />
+            <Icon className="h-4 w-4" />
             {label}
             {key === 'secondary' && secondaryListings.length > 0 && (
-              <Badge variant="outline" className="ml-0.5 text-[10px] px-1.5 py-0">
+              <Badge variant="outline" className="ml-0.5 text-xs rounded-full px-2 py-0">
                 {secondaryListings.length}
               </Badge>
             )}
@@ -728,15 +1294,27 @@ export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvest
                 setSelectedAssetId(isSelected ? null : asset.id)
               }}
             >
-              <CardContent className="pt-6">
-                <div className="flex items-start justify-between mb-3">
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between mb-4">
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="font-semibold">{asset.asset_name}</h3>
+                      <h3 className="font-semibold text-base">{asset.asset_name}</h3>
                     </div>
-                    <div className="flex items-center gap-1.5 mt-1">
-                      <Badge variant="outline" className="text-[10px]">{asset.token_symbol}</Badge>
-                      <Badge className="text-[10px] bg-muted/60 text-muted-foreground">{asset.asset_type}</Badge>
+                    <div className="flex items-center gap-1.5 mt-1.5">
+                      <Badge variant="outline" className="text-xs rounded-full px-2.5">{asset.token_symbol}</Badge>
+                      <Badge className="text-xs rounded-full px-2.5 bg-muted/60 text-muted-foreground">{asset.asset_type}</Badge>
+                      {asset.access_type === 'private' && (
+                        <Badge className="text-xs rounded-full px-2.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 gap-1">
+                          <Lock className="h-2.5 w-2.5" />
+                          Private
+                        </Badge>
+                      )}
+                      {asset.third_party_verified && (
+                        <Badge className="text-xs rounded-full px-2.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 gap-1">
+                          <ShieldCheck className="h-2.5 w-2.5" />
+                          Verified
+                        </Badge>
+                      )}
                     </div>
                   </div>
                   <Building2 className="h-5 w-5 text-muted-foreground/40" />
@@ -746,7 +1324,7 @@ export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvest
                     {asset.location}{asset.location && asset.total_acres ? ' · ' : ''}{asset.total_acres ? `${asset.total_acres.toLocaleString()} acres` : ''}
                   </p>
                 )}
-                <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="text-muted-foreground">Valuation</p>
                     <p className="font-bold mt-0.5 tabular-nums">{formatUSD(asset.current_valuation)}</p>
@@ -765,10 +1343,10 @@ export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvest
                   </div>
                 </div>
                 <button
-                  className="mt-3 flex items-center gap-1 text-xs text-primary hover:underline"
+                  className="mt-4 flex items-center gap-1.5 text-sm text-primary font-medium hover:underline"
                   onClick={(e) => { e.stopPropagation(); setDetailAssetId(asset.id) }}
                 >
-                  <ExternalLink className="h-3 w-3" />
+                  <ExternalLink className="h-3.5 w-3.5" />
                   View land details
                 </button>
               </CardContent>
@@ -785,7 +1363,7 @@ export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvest
             <div className="flex items-center gap-2 pt-2">
               <Repeat className="h-4 w-4 text-muted-foreground" />
               <h2 className="text-lg font-semibold">Secondary Market</h2>
-              <Badge variant="outline" className="text-[10px]">{secondaryListings.length} listing{secondaryListings.length !== 1 ? 's' : ''}</Badge>
+              <Badge variant="outline" className="text-xs">{secondaryListings.length} listing{secondaryListings.length !== 1 ? 's' : ''}</Badge>
             </div>
           )}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -807,10 +1385,16 @@ export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvest
                           <h3 className="font-semibold">{asset.asset_name}</h3>
                         </div>
                         <div className="flex items-center gap-1.5 mt-1">
-                          <Badge variant="outline" className="text-[10px]">{asset.token_symbol}</Badge>
-                          <Badge className="text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20">
+                          <Badge variant="outline" className="text-xs rounded-full px-2.5">{asset.token_symbol}</Badge>
+                          <Badge className="text-xs rounded-full px-2.5 bg-status-warning text-warning border-warning/20">
                             Secondary
                           </Badge>
+                          {asset.access_type === 'private' && (
+                            <Badge className="text-xs rounded-full px-2.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 gap-1">
+                              <Lock className="h-2.5 w-2.5" />
+                              Private
+                            </Badge>
+                          )}
                         </div>
                       </div>
                       <Users className="h-5 w-5 text-muted-foreground/40" />
@@ -822,25 +1406,39 @@ export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvest
                       </p>
                     )}
 
-                    <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <p className="text-muted-foreground">Ask Price</p>
-                        <p className="font-bold font-mono mt-0.5 tabular-nums text-red-600 dark:text-red-400">
+                        <p className="font-bold font-mono mt-0.5 tabular-nums text-destructive">
                           ${listing.price_per_token.toFixed(4)}
                         </p>
+                        {listing.asset && (() => {
+                          const nav = listing.asset.nav_per_token
+                          const diff = nav > 0 ? ((listing.price_per_token - nav) / nav) * 100 : 0
+                          if (Math.abs(diff) < 0.01) return null
+                          return (
+                            <p className={`text-xs font-semibold mt-0.5 ${diff > 0 ? 'text-success' : 'text-destructive'}`}>
+                              {diff > 0 ? '+' : ''}{diff.toFixed(1)}% vs NAV
+                            </p>
+                          )
+                        })()}
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">NAV</p>
+                        <p className="font-bold font-mono mt-0.5 tabular-nums">${listing.asset?.nav_per_token.toFixed(4)}</p>
                       </div>
                       <div>
                         <p className="text-muted-foreground">Available</p>
-                        <p className="font-bold mt-0.5 tabular-nums">{listing.token_amount.toLocaleString()} tokens</p>
+                        <p className="font-bold mt-0.5 tabular-nums">{listing.remaining_tokens.toLocaleString()} tokens</p>
                       </div>
                       <div>
                         <p className="text-muted-foreground">Total Value</p>
-                        <p className="font-bold mt-0.5 tabular-nums">{formatUSD(listing.token_amount * listing.price_per_token)}</p>
+                        <p className="font-bold mt-0.5 tabular-nums">{formatUSD(listing.remaining_tokens * listing.price_per_token)}</p>
                       </div>
                     </div>
 
-                    <p className="mt-2 text-[10px] text-muted-foreground">
-                      Listed {timeAgo(listing.created_at)} by investor
+                    <p className="mt-3 text-xs text-muted-foreground">
+                      Listed {timeAgo(listing.created_at)}
                     </p>
                   </CardContent>
                 </Card>
@@ -853,9 +1451,9 @@ export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvest
       {marketTab === 'secondary' && secondaryListings.length === 0 && (
         <Card>
           <CardContent className="py-12 text-center">
-            <Repeat className="mx-auto h-10 w-10 text-muted-foreground/40 mb-3" />
-            <p className="text-muted-foreground">No secondary market listings yet.</p>
-            <p className="text-xs text-muted-foreground mt-1">When investors list tokens for sale, they&apos;ll appear here.</p>
+            <Repeat className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" />
+            <p className="text-base text-muted-foreground font-medium">No secondary market listings yet</p>
+            <p className="text-sm text-muted-foreground mt-1.5">When investors list tokens for sale, they&apos;ll appear here.</p>
           </CardContent>
         </Card>
       )}
@@ -885,8 +1483,8 @@ export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvest
                     {assetTrades.map((t) => (
                       <div key={t.id} className="flex items-center justify-between rounded-md border border-border px-3 py-2 text-xs">
                         <div className="flex items-center gap-2">
-                          <Badge className={`text-[10px] ${
-                            t.side === 'buy' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'
+                          <Badge className={`text-xs rounded-full px-2.5 ${
+                            t.side === 'buy' ? 'bg-status-success text-success' : 'bg-status-danger text-destructive'
                           }`}>
                             {t.side.toUpperCase()}
                           </Badge>
@@ -911,13 +1509,22 @@ export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvest
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-1">
-                    {sellOrders.map((o) => (
-                      <div key={o.id} className="flex items-center justify-between rounded-md bg-red-500/5 border border-red-500/10 px-3 py-1.5 text-xs">
-                        <span className="font-mono text-red-600 dark:text-red-400 tabular-nums">${o.price_per_token.toFixed(4)}</span>
-                        <span className="text-muted-foreground tabular-nums">{o.token_amount.toLocaleString()}</span>
-                        <span className="font-mono tabular-nums">{formatUSD(o.token_amount * o.price_per_token)}</span>
-                      </div>
-                    ))}
+                    {sellOrders.map((o) => {
+                      const nav = selectedAsset?.nav_per_token ?? 0
+                      const diff = nav > 0 ? ((o.price_per_token - nav) / nav) * 100 : 0
+                      return (
+                        <div key={o.id} className="flex items-center justify-between rounded-md bg-destructive/5 border border-destructive/10 px-3 py-1.5 text-xs">
+                          <span className="font-mono text-destructive tabular-nums">${o.price_per_token.toFixed(4)}</span>
+                          {Math.abs(diff) > 0.01 && (
+                            <span className={`text-xs font-semibold ${diff > 0 ? 'text-success' : 'text-destructive'}`}>
+                              {diff > 0 ? '+' : ''}{diff.toFixed(1)}%
+                            </span>
+                          )}
+                          <span className="text-muted-foreground tabular-nums">{o.token_amount.toLocaleString()}</span>
+                          <span className="font-mono tabular-nums">{formatUSD(o.token_amount * o.price_per_token)}</span>
+                        </div>
+                      )
+                    })}
                   </div>
                 </CardContent>
               </Card>
@@ -934,8 +1541,8 @@ export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvest
                     {myOrders.map((o) => (
                       <div key={o.id} className="flex items-center justify-between rounded-md border border-border px-3 py-2 text-xs">
                         <div className="flex items-center gap-2">
-                          <Badge className={`text-[10px] ${
-                            o.side === 'buy' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'
+                          <Badge className={`text-xs ${
+                            o.side === 'buy' ? 'bg-status-success text-success' : 'bg-status-danger text-destructive'
                           }`}>
                             {o.side.toUpperCase()}
                           </Badge>
@@ -945,7 +1552,7 @@ export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvest
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-6 text-[10px] text-destructive"
+                          className="h-6 text-xs text-destructive"
                           onClick={() => cancelOrder(o.id)}
                         >
                           Cancel
@@ -958,8 +1565,8 @@ export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvest
             )}
           </div>
 
-          {/* Place Order */}
-          <div>
+          {/* Place Order — desktop only (mobile uses bottom sheet) */}
+          <div className="hidden lg:block">
             <Card>
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
@@ -968,190 +1575,39 @@ export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvest
                 </CardTitle>
                 <CardDescription>{selectedAsset.token_symbol} — {selectedAsset.asset_name}</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {!currentInvestor ? (
-                  <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4 text-center">
-                    <ShieldAlert className="mx-auto h-6 w-6 text-amber-500 mb-2" />
-                    <p className="text-sm text-amber-700 dark:text-amber-400">
-                      You must be an approved platform investor to trade.
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">Contact your platform administrator.</p>
-                  </div>
-                ) : currentInvestor.kyc_status !== 'verified' ? (
-                  <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4 text-center">
-                    <ShieldAlert className="mx-auto h-6 w-6 text-amber-500 mb-2" />
-                    <p className="text-sm text-amber-700 dark:text-amber-400">
-                      Your KYC verification is pending.
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">You can trade once verified.</p>
-                  </div>
-                ) : (
-                  <>
-                    {/* Side toggle */}
-                    <div className="grid grid-cols-2 gap-1 rounded-lg border border-border p-1">
-                      <button
-                        onClick={() => setOrderSide('buy')}
-                        className={`rounded-md py-2 text-sm font-medium transition-colors ${
-                          orderSide === 'buy'
-                            ? 'bg-green-500 text-white'
-                            : 'text-muted-foreground hover:bg-muted/30'
-                        }`}
-                      >
-                        Buy
-                      </button>
-                      <button
-                        onClick={() => setOrderSide('sell')}
-                        className={`rounded-md py-2 text-sm font-medium transition-colors ${
-                          orderSide === 'sell'
-                            ? 'bg-red-500 text-white'
-                            : 'text-muted-foreground hover:bg-muted/30'
-                        }`}
-                      >
-                        Sell
-                      </button>
-                    </div>
-
-                    {/* Payment/signing method */}
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-muted-foreground">
-                        {orderSide === 'buy' ? 'Payment Method' : 'Signing Method'}
-                      </label>
-                      <div className="grid grid-cols-2 gap-1 rounded-lg border border-border p-1">
-                        <button
-                          onClick={() => setPaymentMethod('moonpay')}
-                          className={`rounded-md py-2 text-xs font-medium transition-colors flex items-center justify-center gap-1.5 ${
-                            paymentMethod === 'moonpay'
-                              ? orderSide === 'buy' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
-                              : 'text-muted-foreground hover:bg-muted/30'
-                          }`}
-                        >
-                          <CreditCard className="h-3.5 w-3.5" />
-                          {orderSide === 'buy' ? 'USD (MoonPay)' : 'Platform Wallet'}
-                        </button>
-                        <button
-                          onClick={() => setPaymentMethod('xaman')}
-                          className={`rounded-md py-2 text-xs font-medium transition-colors flex items-center justify-center gap-1.5 ${
-                            paymentMethod === 'xaman'
-                              ? 'bg-primary text-primary-foreground'
-                              : 'text-muted-foreground hover:bg-muted/30'
-                          }`}
-                        >
-                          <Wallet className="h-3.5 w-3.5" />
-                          Xaman Wallet
-                        </button>
-                      </div>
-                      {orderSide === 'buy' && paymentMethod === 'moonpay' && (
-                        <p className="text-[10px] text-muted-foreground">Pay with debit card or bank transfer. No crypto wallet needed.</p>
-                      )}
-                      {orderSide === 'sell' && paymentMethod === 'moonpay' && (
-                        <p className="text-[10px] text-muted-foreground">Auto-sign with your platform custodial wallet.</p>
-                      )}
-                      {paymentMethod === 'xaman' && (
-                        <p className="text-[10px] text-muted-foreground">Sign with your own XRPL wallet via Xaman app.</p>
-                      )}
-                    </div>
-
-                    {/* Receive currency toggle — hidden when MoonPay buy (MoonPay handles conversion) */}
-                    {!(orderSide === 'buy' && paymentMethod === 'moonpay') && (
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-medium text-muted-foreground">{orderSide === 'sell' ? 'Receive in' : 'Pay with'}</label>
-                        <div className="grid grid-cols-2 gap-1 rounded-lg border border-border p-1">
-                          <button
-                            onClick={() => setPayCurrency('RLUSD')}
-                            className={`rounded-md py-1.5 text-xs font-medium transition-colors ${
-                              payCurrency === 'RLUSD'
-                                ? 'bg-primary text-primary-foreground'
-                                : 'text-muted-foreground hover:bg-muted/30'
-                            }`}
-                          >
-                            RLUSD
-                          </button>
-                          <button
-                            onClick={() => setPayCurrency('XRP')}
-                            className={`rounded-md py-1.5 text-xs font-medium transition-colors ${
-                              payCurrency === 'XRP'
-                                ? 'bg-primary text-primary-foreground'
-                                : 'text-muted-foreground hover:bg-muted/30'
-                            }`}
-                          >
-                            XRP
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-muted-foreground">Token Amount</label>
-                      <input
-                        type="number"
-                        className="input w-full font-mono"
-                        placeholder="0"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
-                        min="0"
-                      />
-                    </div>
-
-                    {/* Price is locked to NAV */}
-                    <div className="rounded-lg bg-muted/40 p-3">
-                      <p className="text-xs text-muted-foreground">Price per Token</p>
-                      <p className="text-lg font-bold font-mono mt-0.5">${selectedAsset.nav_per_token.toFixed(4)}</p>
-                      <p className="text-[11px] text-muted-foreground">Set by asset NAV</p>
-                    </div>
-
-                    {totalValue > 0 && (
-                      <div className="rounded-lg bg-muted/40 p-3 text-center">
-                        <p className="text-xs text-muted-foreground">Total Value</p>
-                        <p className="text-lg font-bold mt-0.5">{formatUSD(totalValue)}</p>
-                        <p className="text-[11px] text-muted-foreground">{payCurrency}</p>
-                      </div>
-                    )}
-
-                    {error && (
-                      <div className="flex items-center gap-2 text-xs text-destructive">
-                        <AlertCircle className="h-3.5 w-3.5" />
-                        {error}
-                      </div>
-                    )}
-                    {success && (
-                      <p className="text-xs text-green-500">{success}</p>
-                    )}
-
-                    <Button
-                      onClick={submitOrder}
-                      disabled={submitting || !amount || parseFloat(amount) <= 0}
-                      className={`w-full gap-2 ${
-                        orderSide === 'buy'
-                          ? 'bg-green-600 hover:bg-green-700'
-                          : 'bg-red-600 hover:bg-red-700'
-                      }`}
-                    >
-                      {submitting ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : orderSide === 'buy' && paymentMethod === 'moonpay' ? (
-                        <CreditCard className="h-4 w-4" />
-                      ) : (
-                        <DollarSign className="h-4 w-4" />
-                      )}
-                      {submitting
-                        ? 'Placing order...'
-                        : orderSide === 'buy' && paymentMethod === 'moonpay'
-                          ? `Buy ${selectedAsset.token_symbol} with USD`
-                          : `${orderSide === 'buy' ? 'Buy' : 'Sell'} ${selectedAsset.token_symbol}`}
-                    </Button>
-
-                    {/* MoonPay buy hint */}
-                    {orderSide === 'buy' && paymentMethod === 'moonpay' && totalValue > 0 && (
-                      <p className="text-[10px] text-center text-muted-foreground">
-                        You&apos;ll pay ~{formatUSD(totalValue)} via MoonPay (card/bank)
-                      </p>
-                    )}
-                  </>
-                )}
+              <CardContent>
+                {renderOrderForm()}
               </CardContent>
             </Card>
           </div>
         </div>
+      )}
+
+      {/* Mobile/tablet trade sheet */}
+      {selectedAsset && (
+        <>
+          <div className="fixed bottom-24 right-6 lg:hidden z-30">
+            <Button
+              size="lg"
+              className="rounded-full shadow-lg gap-2 px-6"
+              onClick={() => setShowTradeSheet(true)}
+            >
+              <TrendingUp className="h-4 w-4" />
+              Trade {selectedAsset.token_symbol}
+            </Button>
+          </div>
+          <Sheet open={showTradeSheet} onOpenChange={setShowTradeSheet}>
+            <SheetContent side="bottom" className="h-[85vh] overflow-y-auto rounded-t-2xl">
+              <SheetHeader>
+                <SheetTitle>Trade {selectedAsset.token_symbol}</SheetTitle>
+                <SheetDescription>{selectedAsset.asset_name}</SheetDescription>
+              </SheetHeader>
+              <div className="mt-6">
+                {renderOrderForm()}
+              </div>
+            </SheetContent>
+          </Sheet>
+        </>
       )}
 
       {/* Asset detail side sheet */}
@@ -1169,13 +1625,13 @@ export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvest
                 <SheetHeader>
                   <SheetTitle>{asset.asset_name}</SheetTitle>
                   <SheetDescription className="flex items-center gap-2 flex-wrap">
-                    <Badge variant="outline" className="text-[10px]">{asset.token_symbol}</Badge>
-                    <Badge className="text-[10px] bg-muted/60 text-muted-foreground">{asset.asset_type}</Badge>
+                    <Badge variant="outline" className="text-xs">{asset.token_symbol}</Badge>
+                    <Badge className="text-xs bg-muted/60 text-muted-foreground">{asset.asset_type}</Badge>
                     {asset.ai_rating && (
-                      <Badge className={`text-[10px] ${
-                        asset.ai_rating >= 7 ? 'bg-green-500/10 text-green-500' :
-                        asset.ai_rating >= 4 ? 'bg-amber-500/10 text-amber-500' :
-                        'bg-red-500/10 text-red-500'
+                      <Badge className={`text-xs ${
+                        asset.ai_rating >= 7 ? 'bg-status-success text-success' :
+                        asset.ai_rating >= 4 ? 'bg-status-warning text-warning' :
+                        'bg-status-danger text-destructive'
                       }`}>
                         AI: {asset.ai_rating}/10
                       </Badge>
@@ -1279,7 +1735,7 @@ export function MarketplaceBrowser({ assets, orders, filledOrders, currentInvest
                     <div className="rounded-lg border border-border p-4 text-center">
                       <Coins className="mx-auto h-6 w-6 text-muted-foreground/30 mb-1.5" />
                       <p className="text-xs text-muted-foreground">No lease or distribution data yet.</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">Royalty details will appear once a contract is uploaded.</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">Royalty details will appear once a contract is uploaded.</p>
                     </div>
                   )}
 

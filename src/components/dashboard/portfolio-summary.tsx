@@ -59,16 +59,16 @@ export function PortfolioSummary({ holdings }: PortfolioSummaryProps) {
       value: `${avgYield.toFixed(1)}%`,
       icon: TrendingUp,
       sub: 'across holdings',
-      color: 'text-green-500',
-      bg: 'bg-green-500/10',
+      color: 'text-success',
+      bg: 'bg-status-success',
     },
     {
       label: 'Total Tokens',
       value: new Intl.NumberFormat('en-US').format(totalTokens),
       icon: Coins,
       sub: 'token units held',
-      color: 'text-amber-500',
-      bg: 'bg-amber-500/10',
+      color: 'text-warning',
+      bg: 'bg-status-warning',
     },
   ]
 
@@ -78,17 +78,17 @@ export function PortfolioSummary({ holdings }: PortfolioSummaryProps) {
         const Icon = stat.icon
         return (
           <Card key={stat.label}>
-            <CardContent className="pt-6">
+            <CardContent className="p-6">
               <div className="flex items-center gap-4">
                 <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${stat.bg}`}>
                   <Icon className={`h-5 w-5 ${stat.color}`} />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs font-medium text-muted-foreground">{stat.label}</p>
+                  <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
                   <p className="text-2xl font-bold tabular-nums tracking-tight mt-0.5">
                     {stat.value}
                   </p>
-                  <p className="text-[11px] text-muted-foreground/70 mt-0.5">{stat.sub}</p>
+                  <p className="text-xs text-muted-foreground/70 mt-0.5">{stat.sub}</p>
                 </div>
               </div>
             </CardContent>

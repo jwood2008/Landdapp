@@ -137,8 +137,8 @@ export function OnChainAnalytics({ issuerWallet, tokenSymbol, totalSupply }: Pro
                 <Badge
                   className={`text-xs ${
                     data.requireAuth
-                      ? 'bg-green-500/10 text-green-500'
-                      : 'bg-amber-500/10 text-amber-500'
+                      ? 'bg-status-success text-success'
+                      : 'bg-status-warning text-warning'
                   }`}
                 >
                   {data.requireAuth ? 'Enabled' : 'Disabled'}
@@ -221,11 +221,11 @@ export function OnChainAnalytics({ issuerWallet, tokenSymbol, totalSupply }: Pro
                               </td>
                               <td className="px-3 py-2.5 text-center">
                                 {holder.authorized ? (
-                                  <Badge className="text-[10px] bg-green-500/10 text-green-500">
+                                  <Badge className="text-xs bg-status-success text-success">
                                     Yes
                                   </Badge>
                                 ) : (
-                                  <Badge className="text-[10px] bg-muted text-muted-foreground">
+                                  <Badge className="text-xs bg-muted text-muted-foreground">
                                     No
                                   </Badge>
                                 )}

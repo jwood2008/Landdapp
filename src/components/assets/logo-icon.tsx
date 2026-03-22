@@ -1,6 +1,6 @@
 /**
- * App logo — sharp geometric hexagon with inner diamond.
- * Refined luxury fintech aesthetic with crisp lines.
+ * App logo — XRPL-inspired X mark.
+ * Clean, bold strokes forming the signature X shape from the XRP Ledger brand.
  */
 export function LogoIcon({ className }: { className?: string }) {
   return (
@@ -10,36 +10,48 @@ export function LogoIcon({ className }: { className?: string }) {
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      {/* Outer hexagon */}
+      {/* Top-left to center */}
       <path
-        d="M12 2L21.5 7.5V16.5L12 22L2.5 16.5V7.5L12 2Z"
+        d="M4.5 3.5L10.5 9.5"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      {/* Top-right to center */}
+      <path
+        d="M19.5 3.5L13.5 9.5"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      {/* Center node */}
+      <circle
+        cx="12"
+        cy="12"
+        r="2.5"
         fill="currentColor"
-        opacity="0.08"
+        opacity="0.15"
       />
-      <path
-        d="M12 2L21.5 7.5V16.5L12 22L2.5 16.5V7.5L12 2Z"
+      <circle
+        cx="12"
+        cy="12"
+        r="2.5"
         stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinejoin="bevel"
+        strokeWidth="1.5"
       />
-      {/* Inner diamond */}
+      {/* Bottom-left from center */}
       <path
-        d="M12 6.5L17 12L12 17.5L7 12L12 6.5Z"
-        fill="currentColor"
-        opacity="0.18"
+        d="M4.5 20.5L10.5 14.5"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
       />
+      {/* Bottom-right from center */}
       <path
-        d="M12 6.5L17 12L12 17.5L7 12L12 6.5Z"
+        d="M19.5 20.5L13.5 14.5"
         stroke="currentColor"
-        strokeWidth="0.8"
-        strokeLinejoin="bevel"
-      />
-      {/* Center accent line */}
-      <line
-        x1="12" y1="9" x2="12" y2="15"
-        stroke="currentColor"
-        strokeWidth="0.6"
-        opacity="0.4"
+        strokeWidth="2"
+        strokeLinecap="round"
       />
     </svg>
   )

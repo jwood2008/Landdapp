@@ -21,11 +21,11 @@ interface Props {
 }
 
 const categoryColors: Record<string, string> = {
-  distribution: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  valuation: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  legal: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+  distribution: 'bg-status-success text-success',
+  valuation: 'bg-status-info text-info',
+  legal: 'bg-status-warning text-warning',
   general: 'bg-muted text-muted-foreground',
-  urgent: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  urgent: 'bg-status-danger text-status-danger-foreground',
 }
 
 export function AnnouncementsFeed({ announcements: initial, isIssuer, assetId }: Props) {
@@ -157,7 +157,7 @@ export function AnnouncementsFeed({ announcements: initial, isIssuer, assetId }:
       )}
 
       {saved && (
-        <div className="flex items-center gap-2 px-4 py-2 text-sm text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/10 border-b border-border">
+        <div className="flex items-center gap-2 px-4 py-2 text-sm text-success bg-success/5 border-b border-border">
           <CheckCircle className="h-4 w-4" /> Announcement posted
         </div>
       )}

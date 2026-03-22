@@ -47,11 +47,11 @@ interface Props {
 }
 
 const KYC_BADGES: Record<string, { color: string; label: string }> = {
-  pending: { color: 'bg-amber-500/10 text-amber-500', label: 'Pending' },
-  submitted: { color: 'bg-blue-500/10 text-blue-500', label: 'Submitted' },
-  verified: { color: 'bg-green-500/10 text-green-500', label: 'Verified' },
-  rejected: { color: 'bg-red-500/10 text-red-500', label: 'Rejected' },
-  expired: { color: 'bg-gray-500/10 text-gray-500', label: 'Expired' },
+  pending: { color: 'bg-status-warning text-warning', label: 'Pending' },
+  submitted: { color: 'bg-status-info text-info', label: 'Submitted' },
+  verified: { color: 'bg-status-success text-success', label: 'Verified' },
+  rejected: { color: 'bg-status-danger text-destructive', label: 'Rejected' },
+  expired: { color: 'bg-muted text-muted-foreground', label: 'Expired' },
 }
 
 function truncAddr(a: string) {
@@ -210,8 +210,8 @@ export function PlatformInvestorManager({ investors, authorizations, assets, set
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-500/10">
-                <ShieldCheck className="h-5 w-5 text-green-500" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-status-success">
+                <ShieldCheck className="h-5 w-5 text-success" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">KYC Verified</p>
@@ -223,8 +223,8 @@ export function PlatformInvestorManager({ investors, authorizations, assets, set
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10">
-                <AlertTriangle className="h-5 w-5 text-amber-500" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-status-warning">
+                <AlertTriangle className="h-5 w-5 text-warning" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Pending KYC</p>
@@ -338,12 +338,12 @@ export function PlatformInvestorManager({ investors, authorizations, assets, set
       )}
 
       {error && (
-        <div className="rounded-lg border border-red-500/20 bg-red-500/5 px-4 py-3 text-sm text-destructive">
+        <div className="rounded-lg border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
           {error}
         </div>
       )}
       {success && (
-        <div className="rounded-lg border border-green-500/20 bg-green-500/5 px-4 py-3 text-sm text-green-600 dark:text-green-400">
+        <div className="rounded-lg border border-success/20 bg-success/5 px-4 py-3 text-sm text-success">
           {success}
         </div>
       )}
@@ -382,7 +382,7 @@ export function PlatformInvestorManager({ investors, authorizations, assets, set
                       <div className="flex items-center gap-4 min-w-0">
                         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted/40 shrink-0">
                           {inv.kyc_status === 'verified' ? (
-                            <ShieldCheck className="h-4 w-4 text-green-500" />
+                            <ShieldCheck className="h-4 w-4 text-success" />
                           ) : (
                             <Users className="h-4 w-4 text-muted-foreground" />
                           )}
@@ -390,12 +390,12 @@ export function PlatformInvestorManager({ investors, authorizations, assets, set
                         <div className="min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-mono text-sm">{truncAddr(inv.wallet_address)}</span>
-                            <Badge className={`text-[10px] ${kyc.color}`}>{kyc.label}</Badge>
+                            <Badge className={`text-xs ${kyc.color}`}>{kyc.label}</Badge>
                             {inv.aml_cleared && (
-                              <Badge className="text-[10px] bg-teal-500/10 text-teal-500">AML</Badge>
+                              <Badge className="text-xs bg-teal-500/10 text-teal-500">AML</Badge>
                             )}
                             {inv.accredited && (
-                              <Badge className="text-[10px] bg-purple-500/10 text-purple-500 gap-0.5">
+                              <Badge className="text-xs bg-primary/10 text-primary gap-0.5">
                                 <BadgeCheck className="h-2.5 w-2.5" /> Accredited
                               </Badge>
                             )}
@@ -494,16 +494,16 @@ export function PlatformInvestorManager({ investors, authorizations, assets, set
                                 >
                                   <div className="flex items-center gap-2">
                                     <span className="text-xs font-medium">{asset.token_symbol}</span>
-                                    <span className="text-[11px] text-muted-foreground">{asset.asset_name}</span>
+                                    <span className="text-xs text-muted-foreground">{asset.asset_name}</span>
                                   </div>
                                   {auth?.status === 'authorized' ? (
-                                    <Badge className="text-[10px] bg-green-500/10 text-green-500 gap-0.5">
+                                    <Badge className="text-xs bg-status-success text-success gap-0.5">
                                       <CheckCircle className="h-2.5 w-2.5" /> Authorized
                                     </Badge>
                                   ) : auth?.status === 'pending' ? (
-                                    <Badge className="text-[10px] bg-amber-500/10 text-amber-500">Pending</Badge>
+                                    <Badge className="text-xs bg-status-warning text-warning">Pending</Badge>
                                   ) : (
-                                    <Badge variant="secondary" className="text-[10px]">Not authorized</Badge>
+                                    <Badge variant="secondary" className="text-xs">Not authorized</Badge>
                                   )}
                                 </div>
                               )

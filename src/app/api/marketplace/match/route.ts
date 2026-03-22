@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/api-auth'
 import { syncHoldingsForWallet } from '@/lib/sync-holdings-server'
+import { notifyTradeConfirmation } from '@/lib/email-notify'
 
 /**
  * Match overlapping buy/sell orders for a given asset.
@@ -144,6 +145,28 @@ export async function POST(req: Request) {
         Promise.allSettled(
           involvedInvestors.map((inv) => syncHoldingsForWallet(inv.wallet_address))
         ).catch(() => {})
+      }
+
+      // Send email notifications for each trade (fire-and-forget)
+      const { data: assetInfo } = await supabase
+        .from('assets')
+        .select('asset_name, token_symbol')
+        .eq('id', asset_id)
+        .single()
+
+      if (assetInfo) {
+        for (const t of trades) {
+          const base = {
+            assetName: assetInfo.asset_name,
+            tokenSymbol: assetInfo.token_symbol,
+            tokenAmount: t.token_amount,
+            pricePerToken: t.price_per_token,
+            totalPrice: t.total_price,
+            currency: t.currency,
+          }
+          notifyTradeConfirmation(t.buyer_id, { ...base, side: 'buy' }).catch(() => {})
+          notifyTradeConfirmation(t.seller_id, { ...base, side: 'sell' }).catch(() => {})
+        }
       }
 
       return NextResponse.json({

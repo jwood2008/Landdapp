@@ -151,6 +151,167 @@ export function IssueRoyalties({ assets, holders, contracts, isCustodial }: Prop
     }
   }
 
+  // Full-page result screen after distribution
+  if (result) {
+    const succeeded = result.results.filter((r) => r.status === 'completed')
+    const failed = result.results.filter((r) => r.status !== 'completed' && r.status !== 'skipped')
+    const skipped = result.results.filter((r) => r.status === 'skipped')
+    const allSucceeded = failed.length === 0
+    const asset = assets.find((a) => a.id === selectedAssetId)
+
+    return (
+      <div className="max-w-2xl mx-auto space-y-8 py-4">
+        {/* Status hero */}
+        <div className="text-center space-y-4">
+          <div className={`inline-flex h-20 w-20 items-center justify-center rounded-full ${
+            allSucceeded ? 'bg-success/10' : 'bg-destructive/10'
+          }`}>
+            {allSucceeded ? (
+              <CheckCircle className="h-10 w-10 text-success" />
+            ) : (
+              <XCircle className="h-10 w-10 text-destructive" />
+            )}
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">
+              {allSucceeded ? 'Distribution Complete' : 'Distribution Partially Failed'}
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              {allSucceeded
+                ? `Successfully distributed royalties for ${result.royaltyPeriod}`
+                : `${succeeded.length} of ${result.results.length} payments completed`
+              }
+            </p>
+          </div>
+        </div>
+
+        {/* Summary cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="rounded-xl border border-border p-4 text-center">
+            <DollarSign className="h-4 w-4 mx-auto text-muted-foreground mb-2" />
+            <p className="text-xl font-bold tabular-nums">{formatUSD(result.totalPayout)}</p>
+            <p className="text-xs text-muted-foreground mt-1">Total Income</p>
+          </div>
+          <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-center">
+            <Wallet className="h-4 w-4 mx-auto text-primary mb-2" />
+            <p className="text-xl font-bold tabular-nums text-primary">{formatUSD(result.distributableAmount)}</p>
+            <p className="text-xs text-muted-foreground mt-1">Paid to Holders</p>
+          </div>
+          <div className="rounded-xl border border-border p-4 text-center">
+            <Users className="h-4 w-4 mx-auto text-muted-foreground mb-2" />
+            <p className="text-xl font-bold tabular-nums">{result.holdersCount}</p>
+            <p className="text-xs text-muted-foreground mt-1">Holders Paid</p>
+          </div>
+          <div className="rounded-xl border border-border p-4 text-center">
+            <Coins className="h-4 w-4 mx-auto text-muted-foreground mb-2" />
+            <p className="text-xl font-bold tabular-nums">{asset?.token_symbol ?? '—'}</p>
+            <p className="text-xs text-muted-foreground mt-1">{result.royaltyPeriod}</p>
+          </div>
+        </div>
+
+        {/* Breakdown */}
+        {(result.ownerRetainedAmount > 0 || result.reserveAmount > 0 || result.unsoldRetained > 0) && (
+          <Card>
+            <CardContent className="py-4">
+              <div className="grid grid-cols-3 gap-4 text-sm text-center">
+                {result.ownerRetainedAmount > 0 && (
+                  <div>
+                    <p className="text-xs text-muted-foreground">Owner Retained ({result.ownerRetainedPercent}%)</p>
+                    <p className="font-bold tabular-nums mt-0.5">{formatUSD(result.ownerRetainedAmount)}</p>
+                  </div>
+                )}
+                {result.reserveAmount > 0 && (
+                  <div>
+                    <p className="text-xs text-muted-foreground">Platform Reserve</p>
+                    <p className="font-bold tabular-nums mt-0.5">{formatUSD(result.reserveAmount)}</p>
+                  </div>
+                )}
+                {result.unsoldRetained > 0 && (
+                  <div>
+                    <p className="text-xs text-muted-foreground">Unsold → Issuer</p>
+                    <p className="font-bold tabular-nums mt-0.5">{formatUSD(result.unsoldRetained)}</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Per-holder results */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">Payment Details</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-muted/30">
+                    <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Wallet</th>
+                    <th className="text-right px-4 py-2.5 font-medium text-muted-foreground">Ownership</th>
+                    <th className="text-right px-4 py-2.5 font-medium text-muted-foreground">Amount</th>
+                    <th className="text-center px-4 py-2.5 font-medium text-muted-foreground">Status</th>
+                    <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">TX Hash</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {result.results.map((r) => (
+                    <tr key={r.paymentId}>
+                      <td className="px-4 py-3 font-mono text-xs">{truncAddr(r.walletAddress)}</td>
+                      <td className="px-4 py-3 text-right tabular-nums text-muted-foreground">{r.ownershipPercent.toFixed(2)}%</td>
+                      <td className="px-4 py-3 text-right font-medium tabular-nums">{formatUSD(r.amount)}</td>
+                      <td className="px-4 py-3 text-center">
+                        {r.status === 'completed' ? (
+                          <Badge className="bg-success/10 text-success border-success/20 text-xs">Paid</Badge>
+                        ) : r.status === 'skipped' ? (
+                          <Badge variant="outline" className="text-xs text-muted-foreground">Skipped</Badge>
+                        ) : (
+                          <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-xs">Failed</Badge>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
+                        {r.txHash ? `${r.txHash.slice(0, 16)}...` : r.error ?? '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Failed payments warning */}
+        {failed.length > 0 && (
+          <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-destructive">{failed.length} payment{failed.length !== 1 ? 's' : ''} failed</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                These holders did not receive their royalty payment. You can retry by issuing another distribution for the failed amounts.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Action buttons */}
+        <div className="flex items-center justify-center gap-3">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setResult(null)
+              setTotalAmount('')
+              setError(null)
+            }}
+            className="gap-2"
+          >
+            <ArrowRight className="h-4 w-4 rotate-180" />
+            Issue Another
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   if (assets.length === 0) {
     return (
       <Card>
@@ -209,7 +370,7 @@ export function IssueRoyalties({ assets, holders, contracts, isCustodial }: Prop
               <div>
                 <p className="font-semibold">{selectedAsset.asset_name}</p>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <Badge variant="outline" className="text-[10px]">{selectedAsset.token_symbol}</Badge>
+                  <Badge variant="outline" className="text-xs">{selectedAsset.token_symbol}</Badge>
                   <span className="text-xs text-muted-foreground">{assetHolders.length} holder{assetHolders.length !== 1 ? 's' : ''}</span>
                 </div>
               </div>
@@ -218,8 +379,8 @@ export function IssueRoyalties({ assets, holders, contracts, isCustodial }: Prop
 
           {/* Custodial wallet check */}
           {selectedAsset && !custodial && (
-            <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-4">
-              <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+            <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4">
+              <div className="flex items-center gap-2 text-destructive">
                 <XCircle className="h-4 w-4 shrink-0" />
                 <span className="text-sm font-medium">Issuer wallet is not platform-managed</span>
               </div>
@@ -231,8 +392,8 @@ export function IssueRoyalties({ assets, holders, contracts, isCustodial }: Prop
 
           {/* No holders check */}
           {selectedAsset && custodial && assetHolders.length === 0 && (
-            <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4">
-              <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+            <div className="rounded-lg border border-warning/20 bg-status-warning p-4">
+              <div className="flex items-center gap-2 text-warning">
                 <AlertTriangle className="h-4 w-4 shrink-0" />
                 <span className="text-sm font-medium">No token holders</span>
               </div>
@@ -262,7 +423,7 @@ export function IssueRoyalties({ assets, holders, contracts, isCustodial }: Prop
                   />
                 </div>
                 {contract?.annual_amount && (
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     Contract: {formatUSD(contract.annual_amount)}/yr
                     {contract.payment_frequency === 'quarterly' ? ` → ~${formatUSD(contract.annual_amount / 4)}/quarter` : ''}
                     {contract.payment_frequency === 'monthly' ? ` → ~${formatUSD(contract.annual_amount / 12)}/month` : ''}
@@ -288,26 +449,26 @@ export function IssueRoyalties({ assets, holders, contracts, isCustodial }: Prop
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Distribution Preview</p>
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div>
-                      <p className="text-[11px] text-muted-foreground">Total Income</p>
+                      <p className="text-xs text-muted-foreground">Total Income</p>
                       <p className="font-bold tabular-nums">{formatUSD(amount)}</p>
                     </div>
                     {ownerRetainedPct > 0 && (
                       <div>
-                        <p className="text-[11px] text-muted-foreground">Owner Retained ({ownerRetainedPct}%)</p>
+                        <p className="text-xs text-muted-foreground">Owner Retained ({ownerRetainedPct}%)</p>
                         <p className="font-bold tabular-nums">{formatUSD(ownerRetained)}</p>
                       </div>
                     )}
                     <div>
-                      <p className="text-[11px] text-muted-foreground">Platform Reserve (10%)</p>
+                      <p className="text-xs text-muted-foreground">Platform Reserve (10%)</p>
                       <p className="font-bold tabular-nums">{formatUSD(reserve)}</p>
                     </div>
                     <div>
-                      <p className="text-[11px] text-muted-foreground">Paid to Holders ({circulatingPercent.toFixed(0)}% sold)</p>
+                      <p className="text-xs text-muted-foreground">Paid to Holders ({circulatingPercent.toFixed(0)}% sold)</p>
                       <p className="font-bold tabular-nums text-primary">{formatUSD(actualDistributed)}</p>
                     </div>
                     {unsoldPercent > 0 && (
                       <div>
-                        <p className="text-[11px] text-muted-foreground">Unsold Tokens ({unsoldPercent.toFixed(0)}%) → Issuer</p>
+                        <p className="text-xs text-muted-foreground">Unsold Tokens ({unsoldPercent.toFixed(0)}%) → Issuer</p>
                         <p className="font-bold tabular-nums">{formatUSD(unsoldRetained)}</p>
                       </div>
                     )}
@@ -315,7 +476,7 @@ export function IssueRoyalties({ assets, holders, contracts, isCustodial }: Prop
 
                   {/* Per-holder preview */}
                   <div className="space-y-1">
-                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
                       <Users className="h-3 w-3" />
                       {assetHolders.length} Holder{assetHolders.length !== 1 ? 's' : ''}
                     </p>
@@ -346,9 +507,22 @@ export function IssueRoyalties({ assets, holders, contracts, isCustodial }: Prop
               )}
 
               {error && (
-                <div className="flex items-center gap-2 text-xs text-destructive">
-                  <XCircle className="h-3.5 w-3.5 shrink-0" />
-                  {error}
+                <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 flex items-start gap-3">
+                  <XCircle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-destructive">
+                      {error.toLowerCase().includes('insufficient') || error.toLowerCase().includes('unfunded')
+                        ? 'Insufficient Funds'
+                        : error.toLowerCase().includes('no_line') || error.toLowerCase().includes('trust')
+                        ? 'Trust Line Error'
+                        : error.toLowerCase().includes('path_dry')
+                        ? 'Payment Path Error'
+                        : error.toLowerCase().includes('timeout') || error.toLowerCase().includes('network')
+                        ? 'Network Error'
+                        : 'Distribution Failed'}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{error}</p>
+                  </div>
                 </div>
               )}
 
@@ -376,80 +550,6 @@ export function IssueRoyalties({ assets, holders, contracts, isCustodial }: Prop
         </CardContent>
       </Card>
 
-      {/* Results */}
-      {result && (
-        <Card className={result.status === 'completed' ? 'border-green-500/30' : 'border-red-500/30'}>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              {result.status === 'completed' ? (
-                <CheckCircle className="h-5 w-5 text-green-500" />
-              ) : (
-                <XCircle className="h-5 w-5 text-red-500" />
-              )}
-              Distribution {result.status === 'completed' ? 'Complete' : 'Partially Failed'}
-            </CardTitle>
-            <CardDescription>{result.royaltyPeriod}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Summary stats */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              <div className="rounded-lg border border-border p-3 text-center">
-                <DollarSign className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
-                <p className="text-lg font-bold tabular-nums">{formatUSD(result.totalPayout)}</p>
-                <p className="text-[10px] text-muted-foreground">Total Income</p>
-              </div>
-              <div className="rounded-lg border border-border p-3 text-center">
-                <Wallet className="h-4 w-4 mx-auto text-primary mb-1" />
-                <p className="text-lg font-bold tabular-nums text-primary">{formatUSD(result.distributableAmount)}</p>
-                <p className="text-[10px] text-muted-foreground">Paid to {result.holdersCount} Holder{result.holdersCount !== 1 ? 's' : ''}</p>
-              </div>
-              {result.unsoldRetained > 0 && (
-                <div className="rounded-lg border border-border p-3 text-center">
-                  <ArrowRight className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
-                  <p className="text-lg font-bold tabular-nums">{formatUSD(result.unsoldRetained)}</p>
-                  <p className="text-[10px] text-muted-foreground">Unsold Tokens → Issuer</p>
-                </div>
-              )}
-            </div>
-
-            {/* Per-holder results */}
-            <div className="rounded-lg border border-border overflow-hidden">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="bg-muted/30">
-                    <th className="text-left px-3 py-2 font-medium text-muted-foreground">Wallet</th>
-                    <th className="text-right px-3 py-2 font-medium text-muted-foreground">Ownership</th>
-                    <th className="text-right px-3 py-2 font-medium text-muted-foreground">Amount</th>
-                    <th className="text-center px-3 py-2 font-medium text-muted-foreground">Status</th>
-                    <th className="text-left px-3 py-2 font-medium text-muted-foreground">TX</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {result.results.map((r) => (
-                    <tr key={r.paymentId} className="hover:bg-muted/10">
-                      <td className="px-3 py-2 font-mono">{truncAddr(r.walletAddress)}</td>
-                      <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{r.ownershipPercent.toFixed(2)}%</td>
-                      <td className="px-3 py-2 text-right font-medium tabular-nums">{formatUSD(r.amount)}</td>
-                      <td className="px-3 py-2 text-center">
-                        <Badge className={`text-[10px] ${
-                          r.status === 'completed' ? 'bg-green-500/10 text-green-500' :
-                          r.status === 'skipped' ? 'bg-muted text-muted-foreground' :
-                          'bg-red-500/10 text-red-500'
-                        }`}>
-                          {r.status}
-                        </Badge>
-                      </td>
-                      <td className="px-3 py-2 font-mono text-muted-foreground truncate max-w-[140px]">
-                        {r.txHash ? `${r.txHash.slice(0, 12)}...` : r.error ?? '—'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }

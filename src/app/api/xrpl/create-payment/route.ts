@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/api-auth'
 import { buildPaymentAmount } from '@/lib/xrpl/amount'
+import { getXrpUsdPrice, usdToXrp } from '@/lib/xrpl/xrp-price'
 
 /**
  * Creates a Xaman payload for a Payment transaction.
@@ -36,7 +37,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Xaman API not configured' }, { status: 500 })
     }
 
-    const xrplAmount = buildPaymentAmount(payCurrency, String(amount), issuerWallet)
+    // Convert USD amount to XRP if paying with XRP
+    let actualAmount: number
+    if (payCurrency === 'XRP') {
+      const xrpPrice = await getXrpUsdPrice()
+      actualAmount = usdToXrp(amount, xrpPrice)
+      console.log(`[create-payment] USD→XRP: $${amount} / $${xrpPrice} = ${actualAmount.toFixed(6)} XRP`)
+    } else {
+      actualAmount = amount // RLUSD is 1:1 USD
+    }
+
+    const xrplAmount = buildPaymentAmount(payCurrency, String(actualAmount), issuerWallet)
 
     const payload = {
       txjson: {
@@ -50,7 +61,7 @@ export async function POST(req: Request) {
         expire: 300,
       },
       custom_meta: {
-        instruction: `Pay ${amount} ${payCurrency} for token purchase`,
+        instruction: `Pay ~${actualAmount.toFixed(4)} ${payCurrency} ($${amount} USD) for token purchase`,
       },
     }
 

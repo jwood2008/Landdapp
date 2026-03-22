@@ -12,6 +12,7 @@ interface SyncResult {
   error?: string
   assets?: string[]
   trustlines?: { currency: string; balance: string; account: string }[]
+  xrplBalances?: { symbol: string; balance: number; ownership: number }[]
 }
 
 export function SyncHoldings({ walletAddress }: { walletAddress: string }) {
@@ -55,10 +56,9 @@ export function SyncHoldings({ walletAddress }: { walletAddress: string }) {
     <div className="flex flex-col items-end gap-1">
       <Button
         variant="ghost"
-        size="sm"
         onClick={sync}
         disabled={syncing}
-        className="gap-1.5 text-muted-foreground"
+        className="gap-1.5 py-2.5 px-4 text-muted-foreground"
       >
         <RefreshCw className={`h-3.5 w-3.5 ${syncing ? 'animate-spin' : ''}`} />
         {syncing ? 'Syncing...' : 'Refresh holdings'}
@@ -68,7 +68,7 @@ export function SyncHoldings({ walletAddress }: { walletAddress: string }) {
         <div className="flex items-center gap-1.5 text-xs">
           {hasError ? (
             <>
-              <AlertCircle className="h-3 w-3 text-amber-500 shrink-0" />
+              <AlertCircle className="h-3 w-3 text-warning shrink-0" />
               <span className="text-muted-foreground max-w-xs truncate" title={result.error}>
                 {result.error?.includes('unreachable') || result.error?.includes('fetch failed')
                   ? 'XRPL unavailable — showing cached data'
@@ -77,14 +77,16 @@ export function SyncHoldings({ walletAddress }: { walletAddress: string }) {
             </>
           ) : synced > 0 ? (
             <>
-              <CheckCircle className="h-3 w-3 text-green-500" />
-              <span className="text-muted-foreground">Synced {synced} holding{synced !== 1 ? 's' : ''}</span>
+              <CheckCircle className="h-3 w-3 text-success" />
+              <span className="text-muted-foreground">
+                Synced from XRPL{result.xrplBalances?.length ? `: ${result.xrplBalances.map(b => `${b.balance} ${b.symbol} (${b.ownership.toFixed(1)}%)`).join(', ')}` : ''}
+              </span>
             </>
           ) : (
             <>
-              <AlertCircle className="h-3 w-3 text-amber-500" />
-              <span className="text-muted-foreground" title={JSON.stringify(result)}>
-                {result.message ?? `No holdings found (${result.trustlineCount ?? 0} trustlines)`}
+              <CheckCircle className="h-3 w-3 text-muted-foreground" />
+              <span className="text-muted-foreground">
+                Up to date
               </span>
             </>
           )}

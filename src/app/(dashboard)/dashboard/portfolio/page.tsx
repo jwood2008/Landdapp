@@ -44,10 +44,10 @@ export default async function PortfolioPage() {
 
   if (!walletAddress) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-8">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Portfolio</h1>
-          <p className="text-muted-foreground">Your tokenized land holdings</p>
+          <p className="text-muted-foreground text-sm">Your tokenized land holdings</p>
         </div>
         <WalletPrompt userId={user.id} />
       </div>
@@ -63,11 +63,11 @@ export default async function PortfolioPage() {
   const firstAsset = firstHolding?.assets as AssetRow | null
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-start justify-between gap-4">
-        <div>
+        <div className="space-y-1">
           <h1 className="text-2xl font-bold tracking-tight">Portfolio</h1>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Holdings for{' '}
             <span className="font-mono text-xs">
               {walletAddress.slice(0, 8)}...{walletAddress.slice(-6)}

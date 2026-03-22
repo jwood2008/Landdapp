@@ -46,11 +46,11 @@ interface Props {
 }
 
 const STATUS_BADGE = {
-  passed: { label: 'Verified', icon: ShieldCheck, className: 'bg-green-500/10 text-green-500 border-green-500/20' },
-  flagged: { label: 'Flagged', icon: ShieldAlert, className: 'bg-amber-500/10 text-amber-500 border-amber-500/20' },
-  rejected: { label: 'Rejected', icon: ShieldX, className: 'bg-red-500/10 text-red-500 border-red-500/20' },
-  pending: { label: 'Pending', icon: Clock, className: 'bg-gray-500/10 text-gray-500 border-gray-500/20' },
-  processing: { label: 'Processing', icon: Clock, className: 'bg-blue-500/10 text-blue-500 border-blue-500/20' },
+  passed: { label: 'Verified', icon: ShieldCheck, className: 'bg-status-success text-success border-success/20' },
+  flagged: { label: 'Flagged', icon: ShieldAlert, className: 'bg-status-warning text-warning border-warning/20' },
+  rejected: { label: 'Rejected', icon: ShieldX, className: 'bg-status-danger text-destructive border-destructive/20' },
+  pending: { label: 'Pending', icon: Clock, className: 'bg-muted text-muted-foreground border-border' },
+  processing: { label: 'Processing', icon: Clock, className: 'bg-status-info text-info border-primary/20' },
 } as const
 
 export function ValuationAuditTrail({ valuations, documents, tokenSymbol }: Props) {
@@ -87,11 +87,11 @@ export function ValuationAuditTrail({ valuations, documents, tokenSymbol }: Prop
               {/* Header row */}
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-2 min-w-0">
-                  <div className={`flex h-8 w-8 items-center justify-center rounded-full shrink-0 ${isUp ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
+                  <div className={`flex h-8 w-8 items-center justify-center rounded-full shrink-0 ${isUp ? 'bg-status-success' : 'bg-status-danger'}`}>
                     {isUp ? (
-                      <TrendingUp className="h-4 w-4 text-green-500" />
+                      <TrendingUp className="h-4 w-4 text-success" />
                     ) : (
-                      <TrendingDown className="h-4 w-4 text-red-500" />
+                      <TrendingDown className="h-4 w-4 text-destructive" />
                     )}
                   </div>
                   <div>
@@ -100,7 +100,7 @@ export function ValuationAuditTrail({ valuations, documents, tokenSymbol }: Prop
                     </p>
                     <p className="text-xs text-muted-foreground">
                       from ${val.previous_value.toLocaleString()}
-                      <span className={`ml-1 font-medium ${isUp ? 'text-green-500' : 'text-red-500'}`}>
+                      <span className={`ml-1 font-medium ${isUp ? 'text-success' : 'text-destructive'}`}>
                         ({isUp ? '+' : ''}{change.toFixed(1)}%)
                       </span>
                     </p>
@@ -123,7 +123,7 @@ export function ValuationAuditTrail({ valuations, documents, tokenSymbol }: Prop
                       )
                     })()
                   ) : (
-                    <Badge className="text-xs bg-gray-500/10 text-gray-500 border-gray-500/20">
+                    <Badge className="text-xs bg-muted text-muted-foreground border-border">
                       No document
                     </Badge>
                   )}
@@ -178,7 +178,7 @@ export function ValuationAuditTrail({ valuations, documents, tokenSymbol }: Prop
                     )}
                     <div>
                       <span className="text-muted-foreground">Signature:</span>{' '}
-                      <span className={doc.signature_detected ? 'text-green-500' : 'text-red-500'}>
+                      <span className={doc.signature_detected ? 'text-success' : 'text-destructive'}>
                         {doc.signature_detected ? 'Yes' : 'Not detected'}
                       </span>
                     </div>
@@ -196,8 +196,8 @@ export function ValuationAuditTrail({ valuations, documents, tokenSymbol }: Prop
                         key={i}
                         className={`flex items-start gap-1.5 text-xs rounded-md px-2 py-1.5 ${
                           flag.severity === 'critical'
-                            ? 'bg-red-500/10 text-red-500'
-                            : 'bg-amber-500/10 text-amber-500'
+                            ? 'bg-status-danger text-destructive'
+                            : 'bg-status-warning text-warning'
                         }`}
                       >
                         <ShieldAlert className="h-3 w-3 shrink-0 mt-0.5" />

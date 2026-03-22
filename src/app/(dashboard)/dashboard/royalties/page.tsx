@@ -18,7 +18,7 @@ export default async function RoyaltiesPage() {
 
   if (!wallet) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-8">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Royalties</h1>
           <p className="text-muted-foreground">Connect a wallet to view your royalties</p>
@@ -79,7 +79,7 @@ export default async function RoyaltiesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Royalties</h1>
         <p className="text-muted-foreground">Earnings from your land token holdings</p>
@@ -88,10 +88,10 @@ export default async function RoyaltiesPage() {
       {/* Summary stats */}
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-500/10">
-                <DollarSign className="h-5 w-5 text-green-500" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-status-success">
+                <DollarSign className="h-5 w-5 text-success" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Total Earned</p>
@@ -101,10 +101,10 @@ export default async function RoyaltiesPage() {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10">
-                <Coins className="h-5 w-5 text-amber-500" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-status-warning">
+                <Coins className="h-5 w-5 text-warning" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Pending</p>
@@ -114,7 +114,7 @@ export default async function RoyaltiesPage() {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-6">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
                 <TrendingUp className="h-5 w-5 text-primary" />
@@ -161,46 +161,46 @@ export default async function RoyaltiesPage() {
         </CardHeader>
         <CardContent>
           {allPayments.length === 0 ? (
-            <div className="py-8 text-center">
-              <Coins className="mx-auto h-10 w-10 text-muted-foreground/40 mb-3" />
+            <div className="py-12 text-center">
+              <Coins className="mx-auto h-12 w-12 text-muted-foreground/40 mb-3" />
               <p className="text-sm text-muted-foreground">No royalty payments yet.</p>
               <p className="text-xs text-muted-foreground mt-1">Royalties are distributed to token holders based on land income.</p>
             </div>
           ) : (
-            <div className="rounded-lg border border-border overflow-hidden">
+            <div className="rounded-lg border border-border overflow-hidden overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-muted/30">
-                    <th className="text-left px-4 py-2.5 text-xs font-medium text-muted-foreground">Asset</th>
-                    <th className="text-left px-4 py-2.5 text-xs font-medium text-muted-foreground">Period</th>
-                    <th className="text-right px-4 py-2.5 text-xs font-medium text-muted-foreground">Amount</th>
-                    <th className="text-center px-4 py-2.5 text-xs font-medium text-muted-foreground">Status</th>
-                    <th className="text-right px-4 py-2.5 text-xs font-medium text-muted-foreground">Date</th>
+                    <th className="text-left px-4 py-3 text-sm font-medium text-muted-foreground">Asset</th>
+                    <th className="text-left px-4 py-3 text-sm font-medium text-muted-foreground">Period</th>
+                    <th className="text-right px-4 py-3 text-sm font-medium text-muted-foreground">Amount</th>
+                    <th className="text-center px-4 py-3 text-sm font-medium text-muted-foreground">Status</th>
+                    <th className="text-right px-4 py-3 text-sm font-medium text-muted-foreground">Date</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
                   {allPayments.map((p) => (
                     <tr key={p.id} className="hover:bg-muted/10">
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3.5">
                         <p className="font-medium text-xs">{p.distributions?.assets?.asset_name ?? '—'}</p>
                         <p className="text-[11px] text-muted-foreground">{p.distributions?.assets?.token_symbol}</p>
                       </td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground">
+                      <td className="px-4 py-3.5 text-xs text-muted-foreground">
                         {p.distributions?.royalty_period ?? p.distributions?.event_type ?? '—'}
                       </td>
-                      <td className="px-4 py-3 text-right font-mono text-xs font-medium tabular-nums">
+                      <td className="px-4 py-3.5 text-right font-mono text-xs font-medium tabular-nums">
                         ${p.amount.toFixed(2)} <span className="text-muted-foreground">{p.currency}</span>
                       </td>
-                      <td className="px-4 py-3 text-center">
-                        <Badge className={`text-[10px] ${
-                          p.status === 'completed' ? 'bg-green-500/10 text-green-500' :
-                          p.status === 'pending' ? 'bg-amber-500/10 text-amber-500' :
+                      <td className="px-4 py-3.5 text-center">
+                        <Badge className={`text-xs rounded-full px-2.5 py-0.5 ${
+                          p.status === 'completed' ? 'bg-status-success text-success' :
+                          p.status === 'pending' ? 'bg-status-warning text-warning' :
                           'bg-muted text-muted-foreground'
                         }`}>
                           {p.status}
                         </Badge>
                       </td>
-                      <td className="px-4 py-3 text-right text-xs text-muted-foreground">
+                      <td className="px-4 py-3.5 text-right text-xs text-muted-foreground">
                         {new Date(p.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                       </td>
                     </tr>

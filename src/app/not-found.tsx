@@ -6,12 +6,13 @@ import { LogoIcon } from '@/components/assets/logo-icon'
 
 export default function NotFound() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-6 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 mb-6">
-        <LogoIcon className="h-7 w-7 text-primary" />
+    <div className="relative flex min-h-screen flex-col items-center justify-center px-6 text-center overflow-hidden">
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-primary/[0.03] via-transparent to-transparent" />
+      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 mb-6">
+        <LogoIcon className="h-8 w-8 text-primary" />
       </div>
-      <h1 className="text-4xl font-bold tracking-tight mb-2">404</h1>
-      <p className="text-lg text-muted-foreground mb-8">
+      <h1 className="text-5xl font-bold tracking-tight mb-2">404</h1>
+      <p className="text-xl text-muted-foreground mb-8">
         This page doesn&apos;t exist or has been moved.
       </p>
       <Link href="/" className={cn(buttonVariants({ variant: 'outline' }), 'gap-2')}>

@@ -44,11 +44,11 @@ export default async function DistributionsPage() {
   const assetMap = new Map((assets ?? []).map((a) => [a.id, a]))
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Distributions</h1>
-          <p className="text-muted-foreground">
+          <p className="text-base text-muted-foreground">
             Manage royalty payouts — automatically from contract terms or manually
           </p>
         </div>
@@ -78,17 +78,17 @@ export default async function DistributionsPage() {
 
       {/* Recent distributions */}
       {recentDistributions && recentDistributions.length > 0 && (
-        <div className="space-y-3">
-          <h2 className="text-sm font-semibold text-muted-foreground">Recent Distributions</h2>
-          <div className="rounded-lg border overflow-hidden">
+        <div className="space-y-4">
+          <h2 className="text-base font-semibold">Recent Distributions</h2>
+          <div className="overflow-x-auto rounded-lg border">
             <table className="w-full text-xs">
               <thead>
                 <tr className="bg-muted/30">
-                  <th className="text-left px-4 py-2 font-medium text-muted-foreground">Asset</th>
-                  <th className="text-left px-4 py-2 font-medium text-muted-foreground">Period</th>
-                  <th className="text-right px-4 py-2 font-medium text-muted-foreground">Amount</th>
-                  <th className="text-center px-4 py-2 font-medium text-muted-foreground">Status</th>
-                  <th className="text-left px-4 py-2 font-medium text-muted-foreground">Date</th>
+                  <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Asset</th>
+                  <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Period</th>
+                  <th className="text-right px-4 py-2.5 font-medium text-muted-foreground">Amount</th>
+                  <th className="text-center px-4 py-2.5 font-medium text-muted-foreground">Status</th>
+                  <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Date</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -96,27 +96,27 @@ export default async function DistributionsPage() {
                   const asset = assetMap.get(d.asset_id)
                   return (
                     <tr key={d.id} className="hover:bg-muted/10">
-                      <td className="px-4 py-2.5 font-medium">
+                      <td className="px-4 py-3 font-medium">
                         {asset?.asset_name ?? 'Unknown'}
                         <span className="ml-1 text-muted-foreground">({asset?.token_symbol ?? '?'})</span>
                       </td>
-                      <td className="px-4 py-2.5 text-muted-foreground">
+                      <td className="px-4 py-3 text-muted-foreground">
                         {d.royalty_period ?? '—'}
                       </td>
-                      <td className="px-4 py-2.5 text-right font-mono tabular-nums">
+                      <td className="px-4 py-3 text-right font-mono tabular-nums">
                         ${Number(d.total_amount).toLocaleString()}
                       </td>
-                      <td className="px-4 py-2.5 text-center">
-                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                          d.status === 'completed' ? 'bg-green-500/10 text-green-600' :
-                          d.status === 'processing' ? 'bg-blue-500/10 text-blue-600' :
-                          d.status === 'failed' ? 'bg-red-500/10 text-red-600' :
-                          'bg-amber-500/10 text-amber-600'
+                      <td className="px-4 py-3 text-center">
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          d.status === 'completed' ? 'bg-status-success text-success' :
+                          d.status === 'processing' ? 'bg-status-info text-info' :
+                          d.status === 'failed' ? 'bg-status-danger text-destructive' :
+                          'bg-status-warning text-warning'
                         }`}>
                           {d.status}
                         </span>
                       </td>
-                      <td className="px-4 py-2.5 text-muted-foreground">
+                      <td className="px-4 py-3 text-muted-foreground">
                         {new Date(d.created_at).toLocaleDateString()}
                       </td>
                     </tr>

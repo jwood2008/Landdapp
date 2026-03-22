@@ -11,10 +11,10 @@ export default async function PlatformSettingsPage() {
     .single()
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-8 max-w-2xl">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Platform Settings</h1>
-        <p className="text-muted-foreground">
+        <p className="text-base text-muted-foreground">
           Configure your permission domain — KYC requirements, marketplace, and authorization rules
         </p>
       </div>

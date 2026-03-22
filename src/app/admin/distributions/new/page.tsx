@@ -16,7 +16,7 @@ export default async function NewDistributionPage() {
     .order('asset_name')
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <Link
           href="/admin"
@@ -26,7 +26,7 @@ export default async function NewDistributionPage() {
           Back to admin
         </Link>
         <h1 className="mt-2 text-2xl font-bold tracking-tight">New Royalty Distribution</h1>
-        <p className="text-muted-foreground">Record a royalty payout for a tokenized land asset</p>
+        <p className="text-base text-muted-foreground">Record a royalty payout for a tokenized land asset</p>
       </div>
 
       <AdminDistributionForm assets={(assets ?? []) as AssetRow[]} />

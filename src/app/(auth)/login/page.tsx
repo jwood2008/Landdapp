@@ -20,7 +20,7 @@ export default function LoginPage() {
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
             <LogoIcon className="h-5 w-5" />
           </div>
-          <span className="font-[family-name:var(--font-display)] text-xl font-semibold tracking-wide">RWA Platform</span>
+          <span className="font-[family-name:var(--font-display)] text-xl font-semibold tracking-wide">TierraDex</span>
         </div>
 
         <div className="relative z-10 space-y-8">
@@ -44,30 +44,30 @@ export default function LoginPage() {
         </div>
 
         <p className="relative z-10 text-sm opacity-40">
-          &copy; {new Date().getFullYear()} RWA Platform
+          &copy; {new Date().getFullYear()} TierraDex
         </p>
       </div>
 
       {/* Right panel - form */}
       <div className="flex w-full lg:w-1/2 flex-col items-center justify-center p-8 lg:p-12">
-        <div className="w-full max-w-sm">
+        <div className="w-full max-w-md">
           <div className="mb-8 flex items-center gap-2.5 lg:hidden">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
               <LogoIcon className="h-4 w-4 text-primary" />
             </div>
-            <span className="font-[family-name:var(--font-display)] text-lg font-semibold tracking-wide">RWA Platform</span>
+            <span className="font-[family-name:var(--font-display)] text-lg font-semibold tracking-wide">TierraDex</span>
           </div>
 
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold tracking-tight">Welcome back</h1>
-            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+          <div className="mb-10">
+            <h1 className="text-3xl font-bold tracking-tight">Welcome back</h1>
+            <p className="mt-2 text-base text-muted-foreground leading-relaxed">
               Sign in to access your portfolio and manage your tokenized assets.
             </p>
           </div>
 
           <LoginForm />
 
-          <p className="mt-8 text-center text-sm text-muted-foreground">
+          <p className="mt-10 text-center text-sm text-muted-foreground">
             Don&apos;t have an account?{' '}
             <Link href="/register" className="font-medium text-primary hover:underline">
               Create one

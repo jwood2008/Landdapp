@@ -19,12 +19,12 @@ const ORACLE_BADGE: Record<string, { label: string; icon: React.ElementType; cla
   lease_income: {
     label: 'Auto-yield',
     icon: Zap,
-    className: 'text-blue-600 dark:text-blue-400',
+    className: 'text-info',
   },
   external_feed: {
     label: 'Live feed',
     icon: Radio,
-    className: 'text-purple-600 dark:text-purple-400',
+    className: 'text-primary',
   },
 }
 
@@ -51,15 +51,15 @@ export function AssetCard({ asset, holding }: AssetCardProps) {
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between gap-2">
             <div className="space-y-1">
-              <h3 className="font-semibold leading-tight">{asset.asset_name}</h3>
+              <h3 className="text-base font-semibold leading-tight">{asset.asset_name}</h3>
               <p className="text-xs text-muted-foreground">{asset.llc_name}</p>
             </div>
-            <Badge variant="secondary" className="shrink-0 text-xs">
+            <Badge variant="secondary" className="shrink-0 text-xs rounded-full">
               {ASSET_TYPE_LABELS[asset.asset_type] ?? asset.asset_type}
             </Badge>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="p-6 pt-0 space-y-4">
           {asset.location && (
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <MapPin className="h-3 w-3" />
@@ -70,11 +70,11 @@ export function AssetCard({ asset, holding }: AssetCardProps) {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <p className="text-xs text-muted-foreground">Valuation</p>
+              <p className="text-sm text-muted-foreground">Valuation</p>
               <p className="font-semibold tabular-nums">{formatUSD(asset.current_valuation)}</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">NAV / Token</p>
+              <p className="text-sm text-muted-foreground">NAV / Token</p>
               <p className="font-semibold tabular-nums">${asset.nav_per_token.toFixed(2)}</p>
             </div>
           </div>
@@ -82,7 +82,7 @@ export function AssetCard({ asset, holding }: AssetCardProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               {asset.annual_yield != null && (
-                <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+                <div className="flex items-center gap-1 text-xs text-success">
                   <TrendingUp className="h-3 w-3" />
                   <span className="tabular-nums">{asset.annual_yield.toFixed(1)}%</span> yield
                 </div>

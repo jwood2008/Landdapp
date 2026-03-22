@@ -128,7 +128,7 @@ export function ListOnDex({ assets }: ListOnDexProps) {
                 >
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-sm">{asset.asset_name}</span>
-                    <Badge variant="outline" className="text-[10px]">{asset.token_symbol}</Badge>
+                    <Badge variant="outline" className="text-xs">{asset.token_symbol}</Badge>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
                     NAV: ${asset.nav_per_token.toFixed(4)} · Supply: {asset.token_supply.toLocaleString()}
@@ -203,7 +203,7 @@ export function ListOnDex({ assets }: ListOnDexProps) {
 
               {error && <p className="text-xs text-destructive">{error}</p>}
               {success && (
-                <div className="flex items-center gap-2 text-xs text-green-500">
+                <div className="flex items-center gap-2 text-xs text-success">
                   <CheckCircle className="h-3.5 w-3.5" />
                   {success}
                 </div>

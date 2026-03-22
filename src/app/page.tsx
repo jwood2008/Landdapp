@@ -67,10 +67,10 @@ export default function LandingPage() {
       {/* Nav */}
       <header className="sticky top-0 z-50 flex h-16 items-center justify-between border-b border-border bg-background/80 backdrop-blur-md px-6 md:px-10">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-600/10">
-            <LogoIcon className="h-4.5 w-4.5 text-amber-600" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+            <LogoIcon className="h-4.5 w-4.5 text-primary" />
           </div>
-          <span className="font-[family-name:var(--font-display)] font-semibold tracking-wide text-lg">RWA Platform</span>
+          <span className="font-[family-name:var(--font-display)] font-semibold tracking-wide text-lg">TierraDex</span>
         </div>
         <div className="flex items-center gap-3">
           <Link href="/login" className={buttonVariants({ variant: 'ghost', size: 'sm' })}>
@@ -124,8 +124,8 @@ export default function LandingPage() {
         <div className="mt-16 grid grid-cols-3 gap-8 md:gap-16">
           {stats.map((stat) => (
             <div key={stat.label} className="text-center">
-              <p className="text-2xl md:text-3xl font-bold tracking-tight">{stat.value}</p>
-              <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
+              <p className="text-3xl md:text-4xl font-bold tracking-tight">{stat.value}</p>
+              <p className="text-sm text-muted-foreground mt-1">{stat.label}</p>
             </div>
           ))}
         </div>
@@ -153,7 +153,7 @@ export default function LandingPage() {
               return (
                 <div
                   key={feature.title}
-                  className="relative rounded-xl border border-border bg-card p-7 space-y-4 transition-colors hover:border-primary/20"
+                  className="relative rounded-xl border border-border bg-card p-8 space-y-4 transition-colors hover:border-primary/20"
                 >
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
@@ -163,11 +163,11 @@ export default function LandingPage() {
                       0{i + 1}
                     </span>
                   </div>
-                  <h3 className="text-lg font-semibold">{feature.title}</h3>
+                  <h3 className="text-xl font-semibold">{feature.title}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
                     {feature.description}
                   </p>
-                  <p className="text-xs text-primary font-medium flex items-center gap-1.5">
+                  <p className="text-sm text-primary font-medium flex items-center gap-1.5">
                     <CheckCircle className="h-3 w-3" />
                     {feature.detail}
                   </p>
@@ -198,9 +198,9 @@ export default function LandingPage() {
               {trustSignals.map((signal) => (
                 <div
                   key={signal}
-                  className="flex items-start gap-3 rounded-lg border border-border bg-card p-4"
+                  className="flex items-start gap-3 rounded-lg border border-border bg-card p-5"
                 >
-                  <Lock className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
+                  <Lock className="h-4 w-4 text-success mt-0.5 shrink-0" />
                   <p className="text-sm">{signal}</p>
                 </div>
               ))}
@@ -227,7 +227,7 @@ export default function LandingPage() {
               return (
                 <div
                   key={cls.name}
-                  className="flex items-center gap-3 rounded-xl border border-border bg-card p-5 text-left transition-colors hover:border-primary/20"
+                  className="flex items-center gap-3 rounded-xl border border-border bg-card p-6 text-left transition-colors hover:border-primary/20"
                 >
                   <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 shrink-0">
                     <Icon className="h-4.5 w-4.5 text-primary" />
@@ -241,7 +241,8 @@ export default function LandingPage() {
       </section>
 
       {/* CTA */}
-      <section className="px-6 md:px-10 py-24 md:py-32 text-center">
+      <section className="relative px-6 md:px-10 py-24 md:py-32 text-center overflow-hidden">
+        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-primary/[0.03] via-primary/[0.02] to-transparent" />
         <div className="mx-auto max-w-2xl">
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
             Ready to tokenize your first asset?
@@ -268,12 +269,12 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border px-6 md:px-10 py-8">
+      <footer className="border-t border-border px-6 md:px-10 py-10">
         <div className="mx-auto max-w-5xl flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <LogoIcon className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">
-              &copy; {new Date().getFullYear()} RWA Platform
+              &copy; {new Date().getFullYear()} TierraDex
             </span>
           </div>
           <p className="text-xs text-muted-foreground">

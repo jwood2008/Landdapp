@@ -559,8 +559,8 @@ export function AdminDistributionForm({ assets }: { assets: AssetRow[] }) {
       {!loading && holderSource && !savedDistId && (
         <div className={`flex items-center gap-2 rounded-lg border px-4 py-2.5 text-xs ${
           holderSource === 'xrpl'
-            ? 'border-green-200 bg-green-50 text-green-700 dark:border-green-800 dark:bg-green-900/10 dark:text-green-400'
-            : 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-900/10 dark:text-amber-400'
+            ? 'border-success/20 bg-success/5 text-success'
+            : 'border-warning/20 bg-status-warning text-warning'
         }`}>
           {holderSource === 'xrpl' ? (
             <>
@@ -579,7 +579,7 @@ export function AdminDistributionForm({ assets }: { assets: AssetRow[] }) {
 
       {/* Error with no holders */}
       {!loading && error && holders.length === 0 && !savedDistId && (
-        <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-900/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-400">
+        <div className="flex items-start gap-2 rounded-lg border border-warning/20 bg-status-warning px-4 py-3 text-sm text-warning">
           <WifiOff className="h-4 w-4 shrink-0 mt-0.5" />
           <div>
             <p className="font-medium">Could not load holder data</p>
@@ -604,8 +604,8 @@ export function AdminDistributionForm({ assets }: { assets: AssetRow[] }) {
                 </CardDescription>
               </div>
               {allDone && (
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-                  <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-status-success">
+                  <CheckCircle className="h-5 w-5 text-success" />
                 </div>
               )}
             </div>
@@ -615,7 +615,7 @@ export function AdminDistributionForm({ assets }: { assets: AssetRow[] }) {
             <div className="space-y-1.5">
               <div className="h-2 rounded-full bg-muted overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-green-500 transition-all duration-500"
+                  className="h-full rounded-full bg-success transition-all duration-500"
                   style={{ width: `${savedPayments.length > 0 ? (completedPayments.length / savedPayments.length) * 100 : 0}%` }}
                 />
               </div>
@@ -637,7 +637,7 @@ export function AdminDistributionForm({ assets }: { assets: AssetRow[] }) {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-6 text-[10px] gap-1"
+                      className="h-6 text-xs gap-1"
                       onClick={checkTrustlines}
                       disabled={trustlineChecking}
                     >
@@ -649,12 +649,12 @@ export function AdminDistributionForm({ assets }: { assets: AssetRow[] }) {
                     </Button>
                   )}
                   {trustlineChecked && allTrustlinesReady && (
-                    <Badge variant="default" className="text-[10px] gap-1">
+                    <Badge variant="default" className="text-xs gap-1">
                       <ShieldCheck className="h-2.5 w-2.5" /> All Ready
                     </Badge>
                   )}
                   {trustlineChecked && !allTrustlinesReady && (
-                    <Badge variant="destructive" className="text-[10px] gap-1">
+                    <Badge variant="destructive" className="text-xs gap-1">
                       <ShieldAlert className="h-2.5 w-2.5" /> {uniqueMissing.length} Missing
                     </Badge>
                   )}
@@ -668,15 +668,15 @@ export function AdminDistributionForm({ assets }: { assets: AssetRow[] }) {
                     </p>
                     <div className="space-y-1.5">
                       {uniqueMissing.map((addr) => (
-                        <div key={addr} className="flex items-center justify-between rounded-md bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 px-3 py-2">
+                        <div key={addr} className="flex items-center justify-between rounded-md bg-status-warning border border-warning/20 px-3 py-2">
                           <div className="flex items-center gap-2">
-                            <ShieldAlert className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                            <ShieldAlert className="h-3.5 w-3.5 text-warning" />
                             <span className="text-xs font-mono">{truncAddr(addr)}</span>
                           </div>
                           <Button
                             variant="outline"
                             size="sm"
-                            className="h-6 text-[10px] gap-1 border-amber-300 dark:border-amber-700"
+                            className="h-6 text-xs gap-1 border-warning/20"
                             onClick={() => createTrustlineFor(addr)}
                             disabled={trustlineCreating === addr}
                           >
@@ -693,7 +693,7 @@ export function AdminDistributionForm({ assets }: { assets: AssetRow[] }) {
                 )}
 
                 {trustlineChecked && allTrustlinesReady && (
-                  <div className="px-4 py-3 flex items-center gap-2 text-xs text-green-700 dark:text-green-400">
+                  <div className="px-4 py-3 flex items-center gap-2 text-xs text-success">
                     <ShieldCheck className="h-3.5 w-3.5" />
                     All recipient wallets have {currency} trust lines — ready to execute payments.
                   </div>
@@ -721,15 +721,15 @@ export function AdminDistributionForm({ assets }: { assets: AssetRow[] }) {
                       </td>
                       <td className="px-4 py-2.5 text-center">
                         {p.status === 'completed' ? (
-                          <Badge variant="default" className="text-[10px] gap-1">
+                          <Badge variant="default" className="text-xs gap-1">
                             <CheckCircle className="h-2.5 w-2.5" /> Confirmed
                           </Badge>
                         ) : p.status === 'processing' ? (
-                          <Badge variant="outline" className="text-[10px] gap-1 animate-pulse">
+                          <Badge variant="outline" className="text-xs gap-1 animate-pulse">
                             <Loader2 className="h-2.5 w-2.5 animate-spin" /> Signing
                           </Badge>
                         ) : (
-                          <Badge variant="secondary" className="text-[10px] gap-1">
+                          <Badge variant="secondary" className="text-xs gap-1">
                             <CircleDot className="h-2.5 w-2.5" /> Pending
                           </Badge>
                         )}
@@ -814,14 +814,14 @@ export function AdminDistributionForm({ assets }: { assets: AssetRow[] }) {
 
       {/* ── POST-RECORD: No holders (record only, no execution) ── */}
       {savedDistId && savedPayments.length === 0 && (
-        <Card className="border-green-200 dark:border-green-800">
+        <Card className="border-success/20">
           <CardContent className="py-6">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-                <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-status-success">
+                <CheckCircle className="h-5 w-5 text-success" />
               </div>
               <div>
-                <h3 className="font-semibold text-green-700 dark:text-green-400">Distribution Recorded</h3>
+                <h3 className="font-semibold text-success">Distribution Recorded</h3>
                 <p className="text-sm text-muted-foreground mt-0.5">
                   Distribution recorded without per-holder payments (no holders found).
                 </p>
@@ -909,9 +909,9 @@ export function AdminDistributionForm({ assets }: { assets: AssetRow[] }) {
                   <p className="text-xs text-muted-foreground">Gross Amount</p>
                   <p className="text-lg font-bold mt-0.5">{formatUSD(totalAmount)}</p>
                 </div>
-                <div className="rounded-lg bg-amber-50 dark:bg-amber-900/10 p-3 text-center">
+                <div className="rounded-lg bg-status-warning p-3 text-center">
                   <p className="text-xs text-muted-foreground">Reserve (10%)</p>
-                  <p className="text-lg font-bold mt-0.5 text-amber-600 dark:text-amber-400">{formatUSD(reserve)}</p>
+                  <p className="text-lg font-bold mt-0.5 text-warning">{formatUSD(reserve)}</p>
                 </div>
                 <div className="rounded-lg bg-primary/10 p-3 text-center">
                   <p className="text-xs text-muted-foreground">Distributable (90%)</p>
@@ -926,7 +926,7 @@ export function AdminDistributionForm({ assets }: { assets: AssetRow[] }) {
                 <div className="bg-muted/30 px-4 py-2 border-b border-border flex items-center justify-between">
                   <p className="text-xs font-medium text-muted-foreground">Per-Holder Breakdown</p>
                   {holders.some((h) => !h.platformInvestorId) && (
-                    <Badge variant="outline" className="text-[10px] gap-1 text-amber-600 border-amber-300">
+                    <Badge variant="outline" className="text-xs gap-1 text-warning border-warning/20">
                       <ShieldAlert className="h-2.5 w-2.5" />
                       {holders.filter((h) => !h.platformInvestorId).length} not on platform
                     </Badge>
@@ -953,15 +953,15 @@ export function AdminDistributionForm({ assets }: { assets: AssetRow[] }) {
                         </td>
                         <td className="px-4 py-2.5 text-center">
                           {h.platformInvestorId ? (
-                            <Badge className={`text-[10px] ${
+                            <Badge className={`text-xs ${
                               h.kycStatus === 'verified'
-                                ? 'bg-green-500/10 text-green-500'
-                                : 'bg-amber-500/10 text-amber-500'
+                                ? 'bg-success/10 text-success'
+                                : 'bg-status-warning text-warning'
                             }`}>
                               {h.kycStatus === 'verified' ? 'Verified' : h.kycStatus ?? 'Pending'}
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                            <Badge variant="outline" className="text-xs text-muted-foreground">
                               Not registered
                             </Badge>
                           )}

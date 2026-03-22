@@ -9,10 +9,10 @@ interface QuarterlyUpdatesProps {
 }
 
 const SENTIMENT_CONFIG = {
-  positive: { label: 'Positive', icon: TrendingUp, className: 'text-green-500 bg-green-500/10' },
+  positive: { label: 'Positive', icon: TrendingUp, className: 'text-success bg-status-success' },
   neutral: { label: 'Neutral', icon: Minus, className: 'text-muted-foreground bg-muted/50' },
-  negative: { label: 'Negative', icon: TrendingDown, className: 'text-red-500 bg-red-500/10' },
-  mixed: { label: 'Mixed', icon: Minus, className: 'text-amber-500 bg-amber-500/10' },
+  negative: { label: 'Negative', icon: TrendingDown, className: 'text-destructive bg-status-danger' },
+  mixed: { label: 'Mixed', icon: Minus, className: 'text-warning bg-status-warning' },
 }
 
 export function QuarterlyUpdates({ updates, tokenSymbol }: QuarterlyUpdatesProps) {
@@ -79,7 +79,7 @@ export function QuarterlyUpdates({ updates, tokenSymbol }: QuarterlyUpdatesProps
 
               {update.ai_analysis && (
                 <div className="rounded-md bg-muted/40 p-3 space-y-1">
-                  <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">AI Analysis</p>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">AI Analysis</p>
                   <p className="text-xs text-muted-foreground leading-relaxed">{update.ai_analysis}</p>
                 </div>
               )}

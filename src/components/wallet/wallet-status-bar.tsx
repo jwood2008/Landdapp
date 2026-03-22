@@ -62,30 +62,30 @@ export function WalletStatusBar({ walletAddress }: WalletStatusBarProps) {
   // Wallet exists — show compact status
   if (address) {
     return (
-      <div className="rounded-lg border border-border bg-muted/20 px-4 py-2.5 flex items-center justify-between">
+      <div className="rounded-lg border border-border bg-muted/20 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-green-500/10">
-            <Wallet className="h-3.5 w-3.5 text-green-500" />
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-status-success">
+            <Wallet className="h-3.5 w-3.5 text-success" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-medium">Platform Wallet</span>
-              <Badge className="text-[9px] bg-green-500/10 text-green-500">Active</Badge>
+              <span className="text-sm font-medium">Platform Wallet</span>
+              <Badge className="text-xs bg-status-success text-success rounded-full">Active</Badge>
             </div>
             <button
               onClick={copyAddress}
-              className="flex items-center gap-1 text-[11px] font-mono text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-1 text-xs font-mono text-muted-foreground hover:text-foreground transition-colors"
             >
               {address.slice(0, 10)}...{address.slice(-6)}
               {copied ? (
-                <Check className="h-2.5 w-2.5 text-green-500" />
+                <Check className="h-2.5 w-2.5 text-success" />
               ) : (
                 <Copy className="h-2.5 w-2.5" />
               )}
             </button>
           </div>
         </div>
-        <span className="text-[10px] text-muted-foreground">Managed by platform</span>
+        <span className="text-xs text-muted-foreground">Managed by platform</span>
       </div>
     )
   }

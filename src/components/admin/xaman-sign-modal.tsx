@@ -129,20 +129,20 @@ export function XamanSignModal({
 
           {status === 'signed' && (
             <div className="flex flex-col items-center gap-3 py-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-                <CheckCircle className="h-7 w-7 text-green-600 dark:text-green-400" />
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-status-success">
+                <CheckCircle className="h-7 w-7 text-success" />
               </div>
-              <p className="font-semibold text-green-700 dark:text-green-400">Transaction Signed</p>
+              <p className="font-semibold text-success">Transaction Signed</p>
               <p className="text-sm text-muted-foreground">Payment submitted to XRPL</p>
             </div>
           )}
 
           {status === 'expired' && (
             <div className="flex flex-col items-center gap-3 py-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
-                <XCircle className="h-7 w-7 text-amber-600 dark:text-amber-400" />
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-status-warning">
+                <XCircle className="h-7 w-7 text-warning" />
               </div>
-              <p className="font-semibold text-amber-700 dark:text-amber-400">Payload Expired</p>
+              <p className="font-semibold text-warning">Payload Expired</p>
               <p className="text-sm text-muted-foreground">The signing request timed out. You can retry.</p>
             </div>
           )}

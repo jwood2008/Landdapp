@@ -28,174 +28,176 @@ interface ColorTheme {
 }
 
 const COLOR_THEMES: ColorTheme[] = [
+  // ── Default brand (navy/blue from globals.css) ──
   {
-    id: 'forest',
-    name: 'Forest',
-    preview: { bg: '#f8faf8', primary: '#2d5a3d', accent: '#e8efe8', sidebar: '#1a3322' },
+    id: 'default',
+    name: 'Navy',
+    preview: { bg: '#FFFFFF', primary: '#0A3161', accent: '#EFF6FF', sidebar: '#0C1D36' },
     light: {
-      primary: 'oklch(0.38 0.12 155)',
-      accent: 'oklch(0.92 0.025 155)',
-      sidebar: 'oklch(0.22 0.05 160)',
-      sidebarPrimary: 'oklch(0.80 0.14 80)',
+      primary: '#0A3161',
+      accent: '#EFF6FF',
+      sidebar: '#0C1D36',
+      sidebarPrimary: '#93C5FD',
     },
     dark: {
-      primary: 'oklch(0.75 0.14 160)',
-      accent: 'oklch(0.26 0.015 155)',
-      sidebar: 'oklch(0.15 0.010 155)',
-      sidebarPrimary: 'oklch(0.78 0.11 85)',
+      primary: '#60A5FA',
+      accent: '#1E293B',
+      sidebar: '#0B1526',
+      sidebarPrimary: '#93C5FD',
     },
   },
-  {
-    id: 'midnight',
-    name: 'Midnight',
-    preview: { bg: '#f7f8fc', primary: '#3b4fc4', accent: '#ebedf8', sidebar: '#1c2340' },
-    light: {
-      primary: 'oklch(0.45 0.18 265)',
-      accent: 'oklch(0.93 0.02 265)',
-      sidebar: 'oklch(0.22 0.05 265)',
-      sidebarPrimary: 'oklch(0.75 0.15 80)',
-    },
-    dark: {
-      primary: 'oklch(0.72 0.16 265)',
-      accent: 'oklch(0.25 0.02 265)',
-      sidebar: 'oklch(0.15 0.02 265)',
-      sidebarPrimary: 'oklch(0.75 0.12 80)',
-    },
-  },
+  // ── Professional themes ──
   {
     id: 'slate',
     name: 'Slate',
-    preview: { bg: '#f8f9fa', primary: '#475569', accent: '#e9ecef', sidebar: '#1e293b' },
+    preview: { bg: '#FAFAFA', primary: '#334155', accent: '#F1F5F9', sidebar: '#0F172A' },
     light: {
-      primary: 'oklch(0.45 0.03 260)',
-      accent: 'oklch(0.93 0.005 260)',
-      sidebar: 'oklch(0.23 0.02 260)',
-      sidebarPrimary: 'oklch(0.80 0.10 210)',
+      primary: '#334155',
+      accent: '#F1F5F9',
+      sidebar: '#0F172A',
+      sidebarPrimary: '#94A3B8',
     },
     dark: {
-      primary: 'oklch(0.70 0.03 260)',
-      accent: 'oklch(0.25 0.01 260)',
-      sidebar: 'oklch(0.16 0.01 260)',
-      sidebarPrimary: 'oklch(0.75 0.08 210)',
+      primary: '#94A3B8',
+      accent: '#1E293B',
+      sidebar: '#020617',
+      sidebarPrimary: '#CBD5E1',
     },
   },
   {
-    id: 'ember',
-    name: 'Ember',
-    preview: { bg: '#faf8f7', primary: '#c2410c', accent: '#fef2e8', sidebar: '#3b1506' },
+    id: 'indigo',
+    name: 'Indigo',
+    preview: { bg: '#F5F7FF', primary: '#4F46E5', accent: '#E0E7FF', sidebar: '#1E1B4B' },
     light: {
-      primary: 'oklch(0.52 0.18 40)',
-      accent: 'oklch(0.94 0.02 55)',
-      sidebar: 'oklch(0.22 0.06 35)',
-      sidebarPrimary: 'oklch(0.82 0.14 80)',
+      primary: '#4F46E5',
+      accent: '#EEF2FF',
+      sidebar: '#1E1B4B',
+      sidebarPrimary: '#A5B4FC',
     },
     dark: {
-      primary: 'oklch(0.72 0.16 40)',
-      accent: 'oklch(0.25 0.02 40)',
-      sidebar: 'oklch(0.15 0.03 35)',
-      sidebarPrimary: 'oklch(0.78 0.12 80)',
-    },
-  },
-  {
-    id: 'ocean',
-    name: 'Ocean',
-    preview: { bg: '#f7fafc', primary: '#0e7490', accent: '#e0f4f8', sidebar: '#083344' },
-    light: {
-      primary: 'oklch(0.52 0.12 210)',
-      accent: 'oklch(0.94 0.02 210)',
-      sidebar: 'oklch(0.24 0.04 210)',
-      sidebarPrimary: 'oklch(0.80 0.12 170)',
-    },
-    dark: {
-      primary: 'oklch(0.72 0.12 210)',
-      accent: 'oklch(0.25 0.02 210)',
-      sidebar: 'oklch(0.16 0.02 210)',
-      sidebarPrimary: 'oklch(0.78 0.10 170)',
-    },
-  },
-  {
-    id: 'violet',
-    name: 'Violet',
-    preview: { bg: '#faf8ff', primary: '#7c3aed', accent: '#f0ebff', sidebar: '#2e1065' },
-    light: {
-      primary: 'oklch(0.50 0.20 290)',
-      accent: 'oklch(0.94 0.03 290)',
-      sidebar: 'oklch(0.22 0.07 290)',
-      sidebarPrimary: 'oklch(0.80 0.14 60)',
-    },
-    dark: {
-      primary: 'oklch(0.72 0.18 290)',
-      accent: 'oklch(0.25 0.03 290)',
-      sidebar: 'oklch(0.15 0.04 290)',
-      sidebarPrimary: 'oklch(0.78 0.12 60)',
-    },
-  },
-  {
-    id: 'rose',
-    name: 'Rose',
-    preview: { bg: '#fdf7f8', primary: '#be123c', accent: '#fde8ec', sidebar: '#3b0613' },
-    light: {
-      primary: 'oklch(0.50 0.18 15)',
-      accent: 'oklch(0.95 0.02 15)',
-      sidebar: 'oklch(0.22 0.06 15)',
-      sidebarPrimary: 'oklch(0.82 0.12 55)',
-    },
-    dark: {
-      primary: 'oklch(0.72 0.16 15)',
-      accent: 'oklch(0.25 0.02 15)',
-      sidebar: 'oklch(0.15 0.03 15)',
-      sidebarPrimary: 'oklch(0.78 0.10 55)',
-    },
-  },
-  {
-    id: 'gold',
-    name: 'Gold',
-    preview: { bg: '#faf9f5', primary: '#a16207', accent: '#fef3c7', sidebar: '#422006' },
-    light: {
-      primary: 'oklch(0.55 0.14 80)',
-      accent: 'oklch(0.95 0.03 85)',
-      sidebar: 'oklch(0.24 0.05 70)',
-      sidebarPrimary: 'oklch(0.80 0.14 80)',
-    },
-    dark: {
-      primary: 'oklch(0.75 0.13 80)',
-      accent: 'oklch(0.26 0.02 80)',
-      sidebar: 'oklch(0.16 0.03 70)',
-      sidebarPrimary: 'oklch(0.78 0.12 80)',
+      primary: '#818CF8',
+      accent: '#1E1B4B',
+      sidebar: '#0F0D2E',
+      sidebarPrimary: '#C7D2FE',
     },
   },
   {
     id: 'emerald',
     name: 'Emerald',
-    preview: { bg: '#f7faf8', primary: '#059669', accent: '#d1fae5', sidebar: '#064e3b' },
+    preview: { bg: '#F0FDF4', primary: '#059669', accent: '#D1FAE5', sidebar: '#022C22' },
     light: {
-      primary: 'oklch(0.58 0.14 165)',
-      accent: 'oklch(0.94 0.03 165)',
-      sidebar: 'oklch(0.26 0.05 165)',
-      sidebarPrimary: 'oklch(0.82 0.12 100)',
+      primary: '#059669',
+      accent: '#ECFDF5',
+      sidebar: '#022C22',
+      sidebarPrimary: '#6EE7B7',
     },
     dark: {
-      primary: 'oklch(0.75 0.14 165)',
-      accent: 'oklch(0.26 0.02 165)',
-      sidebar: 'oklch(0.17 0.03 165)',
-      sidebarPrimary: 'oklch(0.78 0.10 100)',
+      primary: '#34D399',
+      accent: '#022C22',
+      sidebar: '#011A14',
+      sidebarPrimary: '#6EE7B7',
+    },
+  },
+  {
+    id: 'violet',
+    name: 'Violet',
+    preview: { bg: '#FAF5FF', primary: '#7C3AED', accent: '#EDE9FE', sidebar: '#2E1065' },
+    light: {
+      primary: '#7C3AED',
+      accent: '#F5F3FF',
+      sidebar: '#2E1065',
+      sidebarPrimary: '#C4B5FD',
+    },
+    dark: {
+      primary: '#A78BFA',
+      accent: '#1C1033',
+      sidebar: '#120B28',
+      sidebarPrimary: '#C4B5FD',
+    },
+  },
+  {
+    id: 'rose',
+    name: 'Rose',
+    preview: { bg: '#FFF1F2', primary: '#E11D48', accent: '#FFE4E6', sidebar: '#4C0519' },
+    light: {
+      primary: '#E11D48',
+      accent: '#FFF1F2',
+      sidebar: '#4C0519',
+      sidebarPrimary: '#FDA4AF',
+    },
+    dark: {
+      primary: '#FB7185',
+      accent: '#2A0A14',
+      sidebar: '#1A0510',
+      sidebarPrimary: '#FDA4AF',
+    },
+  },
+  {
+    id: 'amber',
+    name: 'Amber',
+    preview: { bg: '#FFFBEB', primary: '#D97706', accent: '#FEF3C7', sidebar: '#451A03' },
+    light: {
+      primary: '#D97706',
+      accent: '#FFFBEB',
+      sidebar: '#451A03',
+      sidebarPrimary: '#FCD34D',
+    },
+    dark: {
+      primary: '#FBBF24',
+      accent: '#27170A',
+      sidebar: '#1A0F05',
+      sidebarPrimary: '#FCD34D',
+    },
+  },
+  {
+    id: 'teal',
+    name: 'Teal',
+    preview: { bg: '#F0FDFA', primary: '#0D9488', accent: '#CCFBF1', sidebar: '#042F2E' },
+    light: {
+      primary: '#0D9488',
+      accent: '#F0FDFA',
+      sidebar: '#042F2E',
+      sidebarPrimary: '#5EEAD4',
+    },
+    dark: {
+      primary: '#2DD4BF',
+      accent: '#042F2E',
+      sidebar: '#021C1B',
+      sidebarPrimary: '#5EEAD4',
     },
   },
   {
     id: 'noir',
     name: 'Noir',
-    preview: { bg: '#fafafa', primary: '#171717', accent: '#f0f0f0', sidebar: '#0a0a0a' },
+    preview: { bg: '#FAFAFA', primary: '#171717', accent: '#F5F5F5', sidebar: '#0A0A0A' },
     light: {
-      primary: 'oklch(0.20 0 0)',
-      accent: 'oklch(0.95 0 0)',
-      sidebar: 'oklch(0.12 0 0)',
-      sidebarPrimary: 'oklch(0.95 0 0)',
+      primary: '#171717',
+      accent: '#F5F5F5',
+      sidebar: '#0A0A0A',
+      sidebarPrimary: '#D4D4D4',
     },
     dark: {
-      primary: 'oklch(0.90 0 0)',
-      accent: 'oklch(0.22 0 0)',
-      sidebar: 'oklch(0.10 0 0)',
-      sidebarPrimary: 'oklch(0.90 0 0)',
+      primary: '#E5E5E5',
+      accent: '#171717',
+      sidebar: '#0A0A0A',
+      sidebarPrimary: '#D4D4D4',
+    },
+  },
+  {
+    id: 'ocean',
+    name: 'Ocean',
+    preview: { bg: '#F0F9FF', primary: '#0369A1', accent: '#E0F2FE', sidebar: '#082F49' },
+    light: {
+      primary: '#0369A1',
+      accent: '#F0F9FF',
+      sidebar: '#082F49',
+      sidebarPrimary: '#7DD3FC',
+    },
+    dark: {
+      primary: '#38BDF8',
+      accent: '#0C2D48',
+      sidebar: '#051B2C',
+      sidebarPrimary: '#7DD3FC',
     },
   },
 ]
@@ -221,7 +223,7 @@ function applyThemeColors(theme: ColorTheme, mode: 'light' | 'dark') {
 
 export function AppearanceSettings() {
   const { theme, setTheme } = useTheme()
-  const [selectedTheme, setSelectedTheme] = useState<string>('forest')
+  const [selectedTheme, setSelectedTheme] = useState<string>('default')
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -233,6 +235,15 @@ export function AppearanceSettings() {
   function handleThemeSelect(colorTheme: ColorTheme) {
     setSelectedTheme(colorTheme.id)
     localStorage.setItem('rwa-color-theme', colorTheme.id)
+
+    if (colorTheme.id === 'default') {
+      // Reset to CSS defaults by removing inline overrides
+      const root = document.documentElement
+      const props = ['--primary', '--accent', '--sidebar', '--sidebar-primary', '--ring', '--sidebar-accent']
+      props.forEach(p => root.style.removeProperty(p))
+      return
+    }
+
     applyThemeColors(colorTheme, (theme ?? 'light') as 'light' | 'dark')
   }
 

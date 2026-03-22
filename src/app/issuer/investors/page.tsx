@@ -20,10 +20,10 @@ export default async function IssuerInvestorsPage() {
 
   if (assetIds.length === 0) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-8">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">My Investors</h1>
-          <p className="text-muted-foreground">No assets found — investors will appear once your token is created.</p>
+          <p className="text-base text-muted-foreground">No assets found — investors will appear once your token is created.</p>
         </div>
       </div>
     )
@@ -55,10 +55,10 @@ export default async function IssuerInvestorsPage() {
   const assetMap = new Map((assets ?? []).map((a) => [a.id, a]))
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">My Investors</h1>
-        <p className="text-muted-foreground">
+        <p className="text-base text-muted-foreground">
           Wallets holding your tokens — {walletAddresses.length} unique investor{walletAddresses.length !== 1 ? 's' : ''}
         </p>
       </div>
@@ -66,7 +66,7 @@ export default async function IssuerInvestorsPage() {
       {/* Summary */}
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-6">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-500/10">
                 <Users className="h-5 w-5 text-teal-500" />
@@ -79,10 +79,10 @@ export default async function IssuerInvestorsPage() {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-500/10">
-                <Wallet className="h-5 w-5 text-green-500" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-status-success">
+                <Wallet className="h-5 w-5 text-success" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">KYC Verified</p>
@@ -94,7 +94,7 @@ export default async function IssuerInvestorsPage() {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-6">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
                 <Mail className="h-5 w-5 text-primary" />
@@ -119,13 +119,13 @@ export default async function IssuerInvestorsPage() {
           <Card key={asset.id}>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <Badge variant="outline">{asset.token_symbol}</Badge>
+                <Badge variant="outline" className="rounded-full">{asset.token_symbol}</Badge>
                 {asset.asset_name}
               </CardTitle>
               <CardDescription>{assetHoldings.length} holder{assetHoldings.length !== 1 ? 's' : ''}</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="rounded-lg border border-border overflow-hidden">
+              <div className="overflow-x-auto rounded-lg border border-border">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-muted/30">
@@ -158,9 +158,9 @@ export default async function IssuerInvestorsPage() {
                             {Number(h.ownership_percent).toFixed(2)}%
                           </td>
                           <td className="px-4 py-3 text-center">
-                            <Badge className={`text-[10px] ${
-                              inv?.kyc_status === 'verified' ? 'bg-green-500/10 text-green-500' :
-                              inv?.kyc_status === 'pending' ? 'bg-amber-500/10 text-amber-500' :
+                            <Badge className={`text-xs rounded-full ${
+                              inv?.kyc_status === 'verified' ? 'bg-status-success text-success' :
+                              inv?.kyc_status === 'pending' ? 'bg-status-warning text-warning' :
                               'bg-muted text-muted-foreground'
                             }`}>
                               {inv?.kyc_status ?? 'Unknown'}

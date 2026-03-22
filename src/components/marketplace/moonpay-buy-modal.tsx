@@ -160,7 +160,7 @@ export function MoonPayBuyModal({
 
             <Button
               onClick={initiateBuy}
-              className="w-full gap-2 bg-green-600 hover:bg-green-700"
+              className="w-full gap-2 bg-success hover:bg-success/90"
             >
               <CreditCard className="h-4 w-4" />
               Pay {formatUSD(totalUsd)} with MoonPay
@@ -180,8 +180,8 @@ export function MoonPayBuyModal({
         {/* Widget link (popup was blocked) */}
         {step === 'widget' && moonpayUrl && (
           <div className="space-y-4">
-            <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4 text-center">
-              <AlertCircle className="mx-auto h-6 w-6 text-amber-500 mb-2" />
+            <div className="rounded-lg border border-warning/20 bg-status-warning p-4 text-center">
+              <AlertCircle className="mx-auto h-6 w-6 text-warning mb-2" />
               <p className="text-sm">Popup was blocked by your browser.</p>
               <p className="text-xs text-muted-foreground mt-1">Click below to open MoonPay in a new tab.</p>
             </div>
@@ -193,7 +193,7 @@ export function MoonPayBuyModal({
             )}
 
             <a href={moonpayUrl} target="_blank" rel="noopener noreferrer">
-              <Button className="w-full gap-2 bg-green-600 hover:bg-green-700">
+              <Button className="w-full gap-2 bg-success hover:bg-success/90">
                 <ExternalLink className="h-4 w-4" />
                 Open MoonPay
               </Button>
@@ -209,15 +209,15 @@ export function MoonPayBuyModal({
         {step === 'pending' && (
           <div className="py-8 text-center space-y-3">
             <div className="relative mx-auto w-12 h-12">
-              <CreditCard className="h-12 w-12 text-green-500/20" />
-              <Loader2 className="absolute inset-0 h-12 w-12 animate-spin text-green-500" />
+              <CreditCard className="h-12 w-12 text-success/20" />
+              <Loader2 className="absolute inset-0 h-12 w-12 animate-spin text-success" />
             </div>
             <p className="text-sm font-medium">Complete your payment in the MoonPay window</p>
             <p className="text-xs text-muted-foreground">
               Once payment is confirmed, we&apos;ll automatically buy your tokens.
             </p>
             {walletAddress && (
-              <Badge variant="outline" className="text-[10px] font-mono">
+              <Badge variant="outline" className="text-xs font-mono">
                 Wallet: {walletAddress.slice(0, 8)}...{walletAddress.slice(-6)}
               </Badge>
             )}
@@ -236,14 +236,14 @@ export function MoonPayBuyModal({
         {/* Success — dev mode or completed */}
         {step === 'success' && (
           <div className="py-6 text-center space-y-3">
-            <CheckCircle2 className="mx-auto h-10 w-10 text-green-500" />
+            <CheckCircle2 className="mx-auto h-10 w-10 text-success" />
             <p className="text-sm font-medium">Trade submitted to XRPL DEX!</p>
             {txResult && (
               <div className="space-y-1">
-                <Badge variant={txResult.result === 'tesSUCCESS' ? 'default' : 'outline'} className="text-[10px]">
+                <Badge variant={txResult.result === 'tesSUCCESS' ? 'default' : 'outline'} className="text-xs">
                   {txResult.result}
                 </Badge>
-                <p className="text-[10px] font-mono text-muted-foreground break-all">
+                <p className="text-xs font-mono text-muted-foreground break-all">
                   TX: {txResult.hash}
                 </p>
               </div>
@@ -253,11 +253,11 @@ export function MoonPayBuyModal({
                 Custodial wallet: <span className="font-mono">{walletAddress.slice(0, 8)}...{walletAddress.slice(-6)}</span>
               </p>
             )}
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               MoonPay not configured — trade executed directly via custodial wallet (dev mode)
             </p>
             <Button
-              className="mt-2 bg-green-600 hover:bg-green-700"
+              className="mt-2 bg-success hover:bg-success/90"
               onClick={() => { onComplete(); handleClose() }}
             >
               Done

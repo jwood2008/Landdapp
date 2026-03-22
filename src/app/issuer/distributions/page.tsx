@@ -89,10 +89,10 @@ export default async function IssuerDistributionsPage() {
   const totalHolders = new Set(Object.values(holdersMap).flat().map((h) => h.wallet_address)).size
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Distributions</h1>
-        <p className="text-muted-foreground">
+        <p className="text-base text-muted-foreground">
           Issue royalty payments to your token holders
         </p>
       </div>
@@ -100,10 +100,10 @@ export default async function IssuerDistributionsPage() {
       {/* Summary stats */}
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-500/10">
-                <DollarSign className="h-5 w-5 text-green-500" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-status-success">
+                <DollarSign className="h-5 w-5 text-success" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Total Distributed</p>
@@ -113,7 +113,7 @@ export default async function IssuerDistributionsPage() {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-6">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-500/10">
                 <Users className="h-5 w-5 text-teal-500" />
@@ -126,7 +126,7 @@ export default async function IssuerDistributionsPage() {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-6">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
                 <Coins className="h-5 w-5 text-primary" />
@@ -166,7 +166,7 @@ export default async function IssuerDistributionsPage() {
             <CardDescription>Past royalty payments for your assets</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="rounded-lg border border-border overflow-hidden">
+            <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="bg-muted/30">
@@ -193,11 +193,11 @@ export default async function IssuerDistributionsPage() {
                           ${Number(d.total_amount).toLocaleString()}
                         </td>
                         <td className="px-4 py-2.5 text-center">
-                          <Badge className={`text-[10px] ${
-                            d.status === 'completed' ? 'bg-green-500/10 text-green-500' :
-                            d.status === 'processing' ? 'bg-blue-500/10 text-blue-500' :
-                            d.status === 'failed' ? 'bg-red-500/10 text-red-500' :
-                            'bg-amber-500/10 text-amber-500'
+                          <Badge className={`text-xs rounded-full ${
+                            d.status === 'completed' ? 'bg-status-success text-success' :
+                            d.status === 'processing' ? 'bg-status-info text-info' :
+                            d.status === 'failed' ? 'bg-status-danger text-destructive' :
+                            'bg-status-warning text-warning'
                           }`}>
                             {d.status}
                           </Badge>

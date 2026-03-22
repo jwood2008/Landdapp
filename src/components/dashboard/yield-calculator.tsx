@@ -56,7 +56,7 @@ export function YieldCalculator({ navPerToken, tokenBalance, annualYield, tokenS
       </button>
 
       {open && (
-        <div className="border-t border-border p-4 space-y-4">
+        <div className="border-t border-border p-6 space-y-5">
           {/* Controls */}
           <div className="grid grid-cols-3 gap-3 text-sm">
             <div className="space-y-1">
@@ -114,9 +114,9 @@ export function YieldCalculator({ navPerToken, tokenBalance, annualYield, tokenS
                   <p className="text-xs text-muted-foreground">Total Distributions</p>
                   <p className="font-bold text-sm mt-0.5 text-primary">{fmtUSD(last.cumulativeDistributions)}</p>
                 </div>
-                <div className="rounded-md bg-green-500/10 p-3">
+                <div className="rounded-md bg-status-success p-3">
                   <p className="text-xs text-muted-foreground">Total Return</p>
-                  <p className="font-bold text-sm mt-0.5 text-green-600 dark:text-green-400">
+                  <p className="font-bold text-sm mt-0.5 text-success">
                     {fmtUSD(last.totalReturn)} ({last.irr.toFixed(1)}%/yr avg)
                   </p>
                 </div>
@@ -145,7 +145,7 @@ export function YieldCalculator({ navPerToken, tokenBalance, annualYield, tokenS
                     <td className="px-3 py-2 text-right">{fmtUSD(row.portfolioValue)}</td>
                     <td className="px-3 py-2 text-right text-primary">{fmtUSD(row.annualDistribution)}</td>
                     <td className="px-3 py-2 text-right">{fmtUSD(row.cumulativeDistributions)}</td>
-                    <td className="px-3 py-2 text-right font-medium text-green-600 dark:text-green-400">
+                    <td className="px-3 py-2 text-right font-medium text-success">
                       {fmtUSD(row.totalReturn)}
                     </td>
                   </tr>

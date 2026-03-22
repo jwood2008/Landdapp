@@ -69,10 +69,10 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5">
       {pendingApproval && (
-        <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4 space-y-1.5">
-          <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+        <div className="rounded-lg border border-warning/20 bg-status-warning p-4 space-y-1.5">
+          <div className="flex items-center gap-2 text-warning">
             <Clock className="h-4 w-4" />
             <p className="text-sm font-medium">Account Pending Approval</p>
           </div>
@@ -83,8 +83,8 @@ export function LoginForm() {
       )}
 
       {rejected && (
-        <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-4 space-y-1.5">
-          <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+        <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 space-y-1.5">
+          <div className="flex items-center gap-2 text-destructive">
             <XCircle className="h-4 w-4" />
             <p className="text-sm font-medium">Account Not Approved</p>
           </div>
@@ -128,7 +128,7 @@ export function LoginForm() {
         <p className="text-sm text-destructive">{error}</p>
       )}
 
-      <Button type="submit" className="w-full" disabled={loading}>
+      <Button type="submit" className="w-full py-3 text-sm" disabled={loading}>
         {loading ? 'Signing in...' : 'Sign in'}
       </Button>
     </form>

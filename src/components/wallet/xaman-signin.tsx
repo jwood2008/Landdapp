@@ -91,7 +91,7 @@ export function XamanSignIn({ onSuccess, onCancel }: XamanSignInProps) {
   if (step === 'success') {
     return (
       <div className="flex flex-col items-center gap-3 py-6">
-        <CheckCircle2 className="h-10 w-10 text-green-500" />
+        <CheckCircle2 className="h-10 w-10 text-success" />
         <p className="text-sm font-medium">Wallet connected!</p>
       </div>
     )

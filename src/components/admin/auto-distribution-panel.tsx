@@ -141,28 +141,28 @@ export function AutoDistributionPanel({ assets, contracts, custodialAddresses }:
               <div className="flex items-center gap-2">
                 <FileText className="h-4 w-4 text-primary" />
                 <span className="text-sm font-medium">Active Contract</span>
-                <Badge variant="outline" className="text-[10px]">{selectedContract.file_name}</Badge>
+                <Badge variant="outline" className="text-xs">{selectedContract.file_name}</Badge>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Annual Amount</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Annual Amount</p>
                   <p className="text-sm font-semibold">
                     ${selectedContract.annual_amount?.toLocaleString() ?? '—'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Frequency</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Frequency</p>
                   <p className="text-sm font-semibold">{frequencyLabel(selectedContract.payment_frequency)}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Escalation</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Escalation</p>
                   <p className="text-sm font-semibold">
                     {selectedContract.escalation_rate ? `${selectedContract.escalation_rate}%/yr` : 'None'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Lease Period</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Lease Period</p>
                   <p className="text-sm font-semibold">
                     {selectedContract.lease_start_date
                       ? `${new Date(selectedContract.lease_start_date).getFullYear()} — ${selectedContract.lease_end_date ? new Date(selectedContract.lease_end_date).getFullYear() : 'ongoing'}`
@@ -183,8 +183,8 @@ export function AutoDistributionPanel({ assets, contracts, custodialAddresses }:
               )}
             </div>
           ) : (
-            <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4">
-              <div className="flex items-center gap-2 text-amber-600">
+            <div className="rounded-lg border border-warning/20 bg-status-warning p-4">
+              <div className="flex items-center gap-2 text-warning">
                 <AlertTriangle className="h-4 w-4" />
                 <span className="text-sm font-medium">No contract uploaded</span>
               </div>
@@ -196,8 +196,8 @@ export function AutoDistributionPanel({ assets, contracts, custodialAddresses }:
 
           {/* Custodial wallet check */}
           {selectedAsset && !isCustodial && (
-            <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-4">
-              <div className="flex items-center gap-2 text-red-600">
+            <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4">
+              <div className="flex items-center gap-2 text-destructive">
                 <XCircle className="h-4 w-4" />
                 <span className="text-sm font-medium">Issuer wallet not custodial</span>
               </div>
@@ -231,9 +231,9 @@ export function AutoDistributionPanel({ assets, contracts, custodialAddresses }:
 
       {/* Error */}
       {error && (
-        <Card className="border-red-500/20">
+        <Card className="border-destructive/20">
           <CardContent className="py-4">
-            <div className="flex items-center gap-2 text-red-600">
+            <div className="flex items-center gap-2 text-destructive">
               <XCircle className="h-4 w-4" />
               <span className="text-sm font-medium">{error}</span>
             </div>
@@ -247,9 +247,9 @@ export function AutoDistributionPanel({ assets, contracts, custodialAddresses }:
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               {result.status === 'completed' ? (
-                <CheckCircle className="h-4 w-4 text-green-500" />
+                <CheckCircle className="h-4 w-4 text-success" />
               ) : (
-                <XCircle className="h-4 w-4 text-red-500" />
+                <XCircle className="h-4 w-4 text-destructive" />
               )}
               Distribution {result.status === 'completed' ? 'Complete' : 'Partial'}
             </CardTitle>
@@ -259,22 +259,22 @@ export function AutoDistributionPanel({ assets, contracts, custodialAddresses }:
               <div className="rounded-lg border p-3 text-center">
                 <DollarSign className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
                 <p className="text-lg font-bold">${result.totalPayout.toLocaleString()}</p>
-                <p className="text-[10px] text-muted-foreground">Total Payout</p>
+                <p className="text-xs text-muted-foreground">Total Payout</p>
               </div>
               <div className="rounded-lg border p-3 text-center">
                 <DollarSign className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
                 <p className="text-lg font-bold">${result.reserveAmount.toLocaleString()}</p>
-                <p className="text-[10px] text-muted-foreground">Reserve (10%)</p>
+                <p className="text-xs text-muted-foreground">Reserve (10%)</p>
               </div>
               <div className="rounded-lg border p-3 text-center">
                 <DollarSign className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
                 <p className="text-lg font-bold">${result.distributableAmount.toLocaleString()}</p>
-                <p className="text-[10px] text-muted-foreground">Distributed</p>
+                <p className="text-xs text-muted-foreground">Distributed</p>
               </div>
               <div className="rounded-lg border p-3 text-center">
                 <Users className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
                 <p className="text-lg font-bold">{result.holdersCount}</p>
-                <p className="text-[10px] text-muted-foreground">Holders Paid</p>
+                <p className="text-xs text-muted-foreground">Holders Paid</p>
               </div>
             </div>
 
@@ -293,10 +293,10 @@ export function AutoDistributionPanel({ assets, contracts, custodialAddresses }:
                     <tr key={r.paymentId} className="hover:bg-muted/10">
                       <td className="px-4 py-2">Payment {i + 1}</td>
                       <td className="px-4 py-2 text-center">
-                        <Badge className={`text-[10px] ${
-                          r.status === 'completed' ? 'bg-green-500/10 text-green-500' :
-                          r.status === 'skipped' ? 'bg-gray-500/10 text-gray-500' :
-                          'bg-red-500/10 text-red-500'
+                        <Badge className={`text-xs ${
+                          r.status === 'completed' ? 'bg-status-success text-success' :
+                          r.status === 'skipped' ? 'bg-muted text-muted-foreground' :
+                          'bg-status-danger text-destructive'
                         }`}>
                           {r.status}
                         </Badge>

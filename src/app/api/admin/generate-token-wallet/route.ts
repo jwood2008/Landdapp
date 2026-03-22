@@ -49,24 +49,35 @@ export async function POST(req: Request) {
       throw new Error(`Failed to store wallet: ${insertErr?.message}`)
     }
 
-    // Automatically enable RequireAuth on the new wallet
+    // Automatically enable DefaultRipple + RequireAuth on the new wallet
+    let defaultRippleEnabled = false
     let requireAuthEnabled = false
 
     try {
-      const result = await xrplSignAndSubmit(seed, {
+      const rippleResult = await xrplSignAndSubmit(seed, {
+        TransactionType: 'AccountSet',
+        Account: address,
+        SetFlag: 8, // asfDefaultRipple
+      })
+      defaultRippleEnabled = rippleResult.success
+    } catch (err) {
+      console.warn('[generate-token-wallet] Failed to enable DefaultRipple:', err)
+    }
+
+    try {
+      const authResult = await xrplSignAndSubmit(seed, {
         TransactionType: 'AccountSet',
         Account: address,
         SetFlag: 2, // asfRequireAuth
       })
-      requireAuthEnabled = result.success
+      requireAuthEnabled = authResult.success
     } catch (authErr) {
-      // Non-fatal — admin can enable RequireAuth manually later
-      console.warn('[generate-token-wallet] Failed to auto-enable RequireAuth:', authErr)
+      console.warn('[generate-token-wallet] Failed to enable RequireAuth:', authErr)
     }
 
     console.warn(
       `[AUDIT] Admin ${auth.user.id} generated token wallet ${address}` +
-      (requireAuthEnabled ? ' (RequireAuth enabled)' : ' (RequireAuth NOT set — enable manually)')
+      ` (DefaultRipple: ${defaultRippleEnabled}, RequireAuth: ${requireAuthEnabled})`
     )
 
     return NextResponse.json({

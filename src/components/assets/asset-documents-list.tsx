@@ -50,7 +50,7 @@ export function AssetDocumentsList({ documents }: AssetDocumentsListProps) {
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium truncate">{doc.title}</p>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                    <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                    <Badge variant="outline" className="text-xs px-1.5 py-0">
                       {config.label}
                     </Badge>
                     {doc.file_size && (

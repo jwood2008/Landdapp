@@ -19,7 +19,7 @@ export function PlatformSettingsForm({ settings: initial }: Props) {
   const [error, setError] = useState<string | null>(null)
 
   const [form, setForm] = useState({
-    platform_name: initial?.platform_name ?? 'RWA Platform',
+    platform_name: initial?.platform_name ?? 'TierraDex',
     domain_wallet: initial?.domain_wallet ?? '',
     require_kyc: initial?.require_kyc ?? true,
     require_aml: initial?.require_aml ?? true,
@@ -85,7 +85,7 @@ export function PlatformSettingsForm({ settings: initial }: Props) {
               onChange={(e) => update('domain_wallet', e.target.value)}
               placeholder="rXXX... (optional platform-level wallet)"
             />
-            <p className="text-[11px] text-muted-foreground">Optional. Used for platform-level operations like fee collection.</p>
+            <p className="text-xs text-muted-foreground">Optional. Used for platform-level operations like fee collection.</p>
           </div>
         </CardContent>
       </Card>
@@ -173,7 +173,7 @@ export function PlatformSettingsForm({ settings: initial }: Props) {
                 {(form.tokenization_fee_bps / 100).toFixed(2)}%
               </Badge>
             </div>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Percentage of tokens sent to domain wallet on each primary market purchase. 100 bps = 1%.
             </p>
           </div>
@@ -194,12 +194,12 @@ export function PlatformSettingsForm({ settings: initial }: Props) {
                 {(form.marketplace_fee_bps / 100).toFixed(2)}%
               </Badge>
             </div>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Percentage of payment currency sent to domain wallet on each secondary market trade. 100 bps = 1%.
             </p>
           </div>
           {!form.domain_wallet && (
-            <p className="text-xs text-amber-500">
+            <p className="text-xs text-warning">
               Set a Domain Wallet above to enable fee collection.
             </p>
           )}
@@ -209,7 +209,7 @@ export function PlatformSettingsForm({ settings: initial }: Props) {
       {/* Save */}
       <div className="flex items-center justify-between">
         <div>
-          {success && <p className="text-sm text-green-500">Settings saved successfully.</p>}
+          {success && <p className="text-sm text-success">Settings saved successfully.</p>}
           {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
         <Button onClick={handleSave} disabled={saving} className="gap-2">

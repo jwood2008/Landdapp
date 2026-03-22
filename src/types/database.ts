@@ -11,13 +11,17 @@ export type EventType = 'VALUATION' | 'LEASE' | 'REFINANCE'
 export type UserRole = 'investor' | 'admin' | 'issuer'
 export type DistributionStatus = 'pending' | 'processing' | 'completed' | 'failed'
 export type OracleMethod = 'manual' | 'lease_income' | 'external_feed'
+export type AccessType = 'public' | 'private'
+export type InvitationStatus = 'pending' | 'accepted' | 'revoked'
+export type LeaseStatus = 'active' | 'pending' | 'ended' | 'terminated'
+export type LeasePaymentStatus = 'due' | 'processing' | 'paid' | 'late' | 'failed' | 'waived'
 export type KycStatus = 'pending' | 'submitted' | 'verified' | 'rejected' | 'expired'
 export type OrderSide = 'buy' | 'sell'
 export type OrderStatus = 'open' | 'partial' | 'filled' | 'cancelled' | 'expired'
 export type TradeStatus = 'pending' | 'settled' | 'failed'
 export type AuthorizationStatus = 'pending' | 'authorized' | 'revoked'
 export type RoyaltyFrequency = 'monthly' | 'quarterly' | 'semi_annual' | 'annual'
-export type DocumentType = 'legal_filing' | 'llc_operating_agreement' | 'deed' | 'appraisal' | 'survey' | 'environmental' | 'title_insurance' | 'other'
+export type DocumentType = 'legal_filing' | 'llc_operating_agreement' | 'deed' | 'appraisal' | 'survey' | 'environmental' | 'title_insurance' | 'third_party_appraisal' | 'other'
 export type AiSentiment = 'positive' | 'neutral' | 'negative' | 'mixed'
 
 export interface Database {
@@ -80,7 +84,13 @@ export interface Database {
           purchase_price: number | null
           purchase_date: string | null
           cover_image_url: string | null
+          access_type: AccessType
+          max_members: number | null
+          third_party_verified: boolean
+          third_party_appraisal_date: string | null
+          third_party_appraiser_name: string | null
           owner_retained_percent: number
+          owner_wallet: string | null
           last_distribution_at: string | null
           created_at: string
           updated_at: string
@@ -213,6 +223,64 @@ export interface Database {
         Insert: Omit<Database['public']['Tables']['asset_contracts']['Row'], 'id' | 'created_at'>
         Update: Partial<Database['public']['Tables']['asset_contracts']['Insert']>
       }
+      asset_invitations: {
+        Row: {
+          id: string
+          asset_id: string
+          email: string
+          user_id: string | null
+          status: InvitationStatus
+          invited_by: string | null
+          invited_at: string
+          accepted_at: string | null
+        }
+        Insert: Omit<Database['public']['Tables']['asset_invitations']['Row'], 'id' | 'invited_at'>
+        Update: Partial<Database['public']['Tables']['asset_invitations']['Insert']>
+      }
+      asset_leases: {
+        Row: {
+          id: string
+          asset_id: string
+          tenant_user_id: string
+          monthly_rent: number
+          due_day: number
+          lease_start_date: string
+          lease_end_date: string | null
+          security_deposit: number
+          escalation_rate: number
+          escalation_type: string | null
+          property_unit: string | null
+          notes: string | null
+          status: LeaseStatus
+          assigned_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['asset_leases']['Row'], 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Database['public']['Tables']['asset_leases']['Insert']>
+      }
+      lease_payments: {
+        Row: {
+          id: string
+          lease_id: string
+          asset_id: string
+          tenant_user_id: string
+          due_date: string
+          amount_due: number
+          amount_paid: number | null
+          currency: string
+          status: LeasePaymentStatus
+          payment_method: string | null
+          xrp_amount: number | null
+          xrp_price_at_payment: number | null
+          xrpl_tx_hash: string | null
+          operator_payment_id: string | null
+          paid_at: string | null
+          created_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['lease_payments']['Row'], 'id' | 'created_at'>
+        Update: Partial<Database['public']['Tables']['lease_payments']['Insert']>
+      }
     }
     Views: Record<string, never>
     Functions: Record<string, never>
@@ -241,6 +309,20 @@ export type DistributionPaymentRow = Database['public']['Tables']['distribution_
 export type IssuerUpdateRow = Database['public']['Tables']['issuer_updates']['Row']
 export type AssetDocumentRow = Database['public']['Tables']['asset_documents']['Row']
 export type AssetContractRow = Database['public']['Tables']['asset_contracts']['Row']
+export type AssetInvitationRow = Database['public']['Tables']['asset_invitations']['Row']
+export type AssetLeaseRow = Database['public']['Tables']['asset_leases']['Row']
+export type LeasePaymentRow = Database['public']['Tables']['lease_payments']['Row']
+
+// Tenant join types
+export type LeaseWithAsset = AssetLeaseRow & {
+  asset: Pick<AssetRow, 'asset_name' | 'location' | 'cover_image_url' | 'token_symbol' | 'issuer_wallet'>
+}
+
+export type LeasePaymentWithLease = LeasePaymentRow & {
+  lease: AssetLeaseRow & {
+    asset: Pick<AssetRow, 'asset_name' | 'location'>
+  }
+}
 
 // ── Custodial Wallet types ──
 

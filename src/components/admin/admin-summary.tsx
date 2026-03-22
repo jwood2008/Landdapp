@@ -41,16 +41,16 @@ export function AdminSummary({ assetCount, investorCount, verifiedInvestorCount,
       }).format(totalDistributed),
       sub: 'all-time completed',
       icon: DollarSign,
-      color: 'text-green-500',
-      bg: 'bg-green-500/10',
+      color: 'text-success',
+      bg: 'bg-status-success',
     },
     {
       label: 'Pending Royalties',
       value: pendingCount.toString(),
       sub: 'awaiting execution',
       icon: Activity,
-      color: 'text-amber-500',
-      bg: 'bg-amber-500/10',
+      color: 'text-warning',
+      bg: 'bg-status-warning',
     },
   ]
 
@@ -70,7 +70,7 @@ export function AdminSummary({ assetCount, investorCount, verifiedInvestorCount,
                   <p className="text-2xl font-bold tabular-nums tracking-tight mt-0.5">
                     {stat.value}
                   </p>
-                  <p className="text-[11px] text-muted-foreground/70 mt-0.5">{stat.sub}</p>
+                  <p className="text-xs text-muted-foreground/70 mt-0.5">{stat.sub}</p>
                 </div>
               </div>
             </CardContent>

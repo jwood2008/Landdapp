@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/api-auth'
 import { signAndSubmit, getCustodialAddress, signAndSubmitFromAddress } from '@/lib/xrpl/wallet-manager'
 import { buildPaymentAmount } from '@/lib/xrpl/amount'
+import { getXrpUsdPrice, usdToXrp } from '@/lib/xrpl/xrp-price'
+import { syncHoldingsForWallet } from '@/lib/sync-holdings-server'
 import { collectTokenizationFee } from '@/lib/xrpl/fee-collector'
 
 /**
@@ -46,10 +48,10 @@ export async function POST(req: Request) {
       )
     }
 
-    // Supply cap enforcement: check DB token_supply vs circulating
+    // Supply cap enforcement: available = token_supply - owner_retained - investor_holdings
     const { data: asset } = await supabase
       .from('assets')
-      .select('id, token_supply')
+      .select('id, token_supply, owner_retained_percent')
       .eq('token_symbol', tokenSymbol)
       .eq('issuer_wallet', issuerWallet)
       .single()
@@ -58,17 +60,18 @@ export async function POST(req: Request) {
       const { data: holdingsRows } = await supabase
         .from('investor_holdings')
         .select('token_balance')
-        .eq('token_symbol', tokenSymbol)
+        .eq('asset_id', asset.id)
 
-      const circulating = (holdingsRows ?? []).reduce(
+      const investorHeld = (holdingsRows ?? []).reduce(
         (sum, h) => sum + Number(h.token_balance), 0
       )
+      const ownerRetained = Math.floor((Number(asset.owner_retained_percent ?? 0) / 100) * asset.token_supply)
+      const available = asset.token_supply - ownerRetained - investorHeld
 
-      if (circulating + tokenAmount > asset.token_supply) {
-        const remaining = asset.token_supply - circulating
+      if (tokenAmount > available) {
         return NextResponse.json(
           {
-            error: `Not enough tokens available. Requested ${tokenAmount} but only ${remaining.toLocaleString()} of ${asset.token_supply.toLocaleString()} ${tokenSymbol} remain.`,
+            error: `Not enough tokens available. Requested ${tokenAmount} but only ${Math.max(0, available).toLocaleString()} of ${asset.token_supply.toLocaleString()} ${tokenSymbol} are available for purchase (${ownerRetained} retained by owner).`,
           },
           { status: 400 }
         )
@@ -127,7 +130,19 @@ export async function POST(req: Request) {
 
     // Step 2: Investor pays issuer (XRP or RLUSD)
     const payCurrency = currency || 'XRP'
-    const totalCost = tokenAmount * pricePerToken
+    const totalCostUsd = tokenAmount * pricePerToken // pricePerToken is in USD
+
+    // Convert USD to XRP if paying in XRP (e.g. $10 at XRP=$2.50 = 4 XRP)
+    let totalCost: number
+    let xrpPrice: number | null = null
+    if (payCurrency === 'XRP') {
+      xrpPrice = await getXrpUsdPrice()
+      totalCost = usdToXrp(totalCostUsd, xrpPrice)
+      console.log(`[primary-buy] USD→XRP conversion: $${totalCostUsd} / $${xrpPrice} = ${totalCost.toFixed(6)} XRP`)
+    } else {
+      totalCost = totalCostUsd // RLUSD is 1:1 with USD
+    }
+
     const paymentAmount = buildPaymentAmount(payCurrency, String(totalCost), issuerWallet)
 
     try {
@@ -211,14 +226,11 @@ export async function POST(req: Request) {
       )
     }
 
-    // Step 3b: Collect tokenization fee (non-blocking — purchase still succeeds if fee fails)
-    const feeResult = await collectTokenizationFee({
-      issuerWallet,
-      tokenSymbol,
-      tokenAmount,
-    })
+    // Step 4: Collect tokenization fee — fire-and-forget (purchase already succeeded)
+    collectTokenizationFee({ issuerWallet, tokenSymbol, tokenAmount })
+      .catch((err) => console.warn('[primary-buy] Tokenization fee failed (non-fatal):', err))
 
-    // Step 4: Mark the order as filled
+    // Step 5: Mark the order as filled
     await supabase
       .from('marketplace_orders')
       .update({
@@ -228,41 +240,17 @@ export async function POST(req: Request) {
       })
       .eq('id', orderId)
 
-    // Step 5: Sync holdings — update or insert the investor's token balance
-    const { data: existingHolding } = await supabase
-      .from('investor_holdings')
-      .select('id, token_balance')
-      .eq('wallet_address', investorAddress)
-      .eq('token_symbol', tokenSymbol)
-      .single()
-
-    if (existingHolding) {
-      await supabase
-        .from('investor_holdings')
-        .update({
-          token_balance: Number(existingHolding.token_balance) + tokenAmount,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', existingHolding.id)
-    } else {
-      const assetId = asset?.id
-      if (assetId) {
-        await supabase.from('investor_holdings').insert({
-          wallet_address: investorAddress,
-          asset_id: assetId,
-          token_symbol: tokenSymbol,
-          token_balance: tokenAmount,
-          cost_basis_per_token: pricePerToken,
-        })
-      }
-    }
+    // Step 6: Sync holdings from XRPL — fire-and-forget so user gets instant response.
+    // The purchase already succeeded on-chain; sync updates the DB cache.
+    syncHoldingsForWallet(investorAddress)
+      .then((r) => console.log(`[primary-buy] Holdings synced: ${r.synced}`))
+      .catch((err) => console.warn('[primary-buy] Post-buy sync failed (non-fatal):', err))
 
     return NextResponse.json({
       hash,
       engineResult,
       status: 'filled',
       message: `${tokenAmount} ${tokenSymbol} delivered to your wallet`,
-      fee: feeResult ? { hash: feeResult.hash, amount: feeResult.feeAmount, token: tokenSymbol } : null,
     })
   } catch (err) {
     console.error('[primary-buy] Unexpected error:', err)

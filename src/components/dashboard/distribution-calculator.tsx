@@ -265,9 +265,9 @@ export function DistributionCalculator({ asset, holders, issuerAddress, onYieldU
           {/* ── Saved confirmation ── */}
           {savedDistId ? (
             <div className="space-y-4">
-              <div className="flex items-start gap-2 rounded-md bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800 px-4 py-3">
-                <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400 shrink-0 mt-0.5" />
-                <div className="text-sm text-green-700 dark:text-green-300 space-y-0.5">
+              <div className="flex items-start gap-2 rounded-md bg-success/5 border border-success/20 px-4 py-3">
+                <CheckCircle className="h-4 w-4 text-success shrink-0 mt-0.5" />
+                <div className="text-sm text-success space-y-0.5">
                   <p className="font-medium">Distribution recorded</p>
                   {savedYield !== null && (
                     <p className="text-xs">
@@ -293,7 +293,7 @@ export function DistributionCalculator({ asset, holders, issuerAddress, onYieldU
                 {uploadedDocs.length > 0 && (
                   <div className="space-y-1.5">
                     {uploadedDocs.map((doc) => (
-                      <div key={doc.path} className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400">
+                      <div key={doc.path} className="flex items-center gap-2 text-xs text-success">
                         <FileText className="h-3.5 w-3.5 shrink-0" />
                         <span className="flex-1 truncate">{doc.name}</span>
                         <span className="text-muted-foreground">{formatBytes(doc.size)}</span>
@@ -406,7 +406,7 @@ export function DistributionCalculator({ asset, holders, issuerAddress, onYieldU
 
               {/* ── Oracle banner ── */}
               {asset.oracle_method === 'lease_income' && (
-                <div className="flex items-start gap-2 rounded-md bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 px-3 py-2.5 text-xs text-blue-700 dark:text-blue-300">
+                <div className="flex items-start gap-2 rounded-md bg-status-info border border-primary/20 px-3 py-2.5 text-xs text-info">
                   <Zap className="h-3.5 w-3.5 shrink-0 mt-0.5" />
                   <span>
                     <strong>Lease Income Oracle active.</strong> Recording a LEASE distribution will
@@ -511,7 +511,7 @@ export function DistributionCalculator({ asset, holders, issuerAddress, onYieldU
 
               {/* ── Contract mismatch warning ── */}
               {contractMismatch && contractExpected && (
-                <div className="flex items-start gap-2 rounded-md bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+                <div className="flex items-start gap-2 rounded-md bg-status-warning border border-warning/20 px-3 py-2 text-xs text-warning">
                   <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
                   <span>
                     Amount differs from contract by more than 10%. Contract expects{' '}
@@ -523,7 +523,7 @@ export function DistributionCalculator({ asset, holders, issuerAddress, onYieldU
 
               {/* ── Yield recalc hint ── */}
               {willRecalcYield && totalAmount > 0 && (
-                <div className="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/10 rounded-md px-3 py-2">
+                <div className="flex items-center gap-2 text-xs text-info bg-status-info rounded-md px-3 py-2">
                   <Zap className="h-3 w-3 shrink-0" />
                   Will update annual yield from trailing 12-month LEASE income ÷ ${asset.current_valuation.toLocaleString()} valuation
                 </div>
@@ -538,7 +538,7 @@ export function DistributionCalculator({ asset, holders, issuerAddress, onYieldU
                   </div>
                   <div className="rounded-md bg-muted/40 p-3">
                     <p className="text-xs text-muted-foreground">Reserve (10%)</p>
-                    <p className="font-bold mt-0.5 text-amber-600 dark:text-amber-400">{reserve.toLocaleString()} {currency}</p>
+                    <p className="font-bold mt-0.5 text-warning">{reserve.toLocaleString()} {currency}</p>
                   </div>
                   <div className="rounded-md bg-primary/10 p-3">
                     <p className="text-xs text-muted-foreground">Distributable</p>

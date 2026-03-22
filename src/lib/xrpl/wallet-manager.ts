@@ -23,13 +23,71 @@ function isTestnet(): boolean {
 }
 
 /**
- * Get a connected XRPL client. Caller must disconnect when done.
+ * Shared XRPL client — reuse a single WebSocket connection
+ * instead of opening a new one per transaction.
  */
+let sharedClient: Client | null = null
+let clientRefCount = 0
+let disconnectTimer: ReturnType<typeof setTimeout> | null = null
+
 async function getXrplClient(): Promise<Client> {
+  // Clear any pending disconnect
+  if (disconnectTimer) {
+    clearTimeout(disconnectTimer)
+    disconnectTimer = null
+  }
+
+  if (sharedClient?.isConnected()) {
+    clientRefCount++
+    return sharedClient
+  }
+
+  // Close stale client if it exists but isn't connected
+  if (sharedClient) {
+    try { await sharedClient.disconnect() } catch {}
+    sharedClient = null
+  }
+
   const wsUrl = isTestnet() ? XRPL_WS_TESTNET : XRPL_WS_MAINNET
-  const client = new Client(wsUrl, { connectionTimeout: 15000 })
+  const client = new Client(wsUrl, { connectionTimeout: 10000 })
   await client.connect()
+  sharedClient = client
+  clientRefCount = 1
   return client
+}
+
+/**
+ * Release the shared client. Disconnects after a short idle period
+ * so back-to-back transactions reuse the same connection.
+ */
+function releaseXrplClient() {
+  clientRefCount = Math.max(0, clientRefCount - 1)
+  if (clientRefCount === 0) {
+    // Disconnect after 5s idle — covers multi-step buy flows
+    disconnectTimer = setTimeout(async () => {
+      if (sharedClient && clientRefCount === 0) {
+        await sharedClient.disconnect().catch(() => {})
+        sharedClient = null
+      }
+    }, 5000)
+  }
+}
+
+/**
+ * Wrap submitAndWait with a timeout to prevent infinite hangs.
+ */
+async function submitAndWaitWithTimeout(
+  client: Client,
+  txBlob: string,
+  timeoutMs = 30000
+): Promise<ReturnType<Client['submitAndWait']> extends Promise<infer R> ? R : never> {
+  const result = await Promise.race([
+    client.submitAndWait(txBlob),
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('XRPL submitAndWait timed out after 30s')), timeoutMs)
+    ),
+  ])
+  return result as Awaited<ReturnType<Client['submitAndWait']>>
 }
 
 /**
@@ -200,7 +258,7 @@ export async function signAndSubmit(
     } as Parameters<Client['autofill']>[0])
 
     const signed = wallet.sign(prepared)
-    const result = await client.submitAndWait(signed.tx_blob)
+    const result = await submitAndWaitWithTimeout(client, signed.tx_blob)
 
     const meta = result.result.meta
     const engineResult = typeof meta === 'object' && meta !== null && 'TransactionResult' in meta
@@ -212,7 +270,7 @@ export async function signAndSubmit(
       engineResult,
     }
   } finally {
-    await client.disconnect().catch(() => {})
+    releaseXrplClient()
   }
 }
 
@@ -248,7 +306,7 @@ export async function signAndSubmitFromAddress(
     } as Parameters<Client['autofill']>[0])
 
     const signed = wallet.sign(prepared)
-    const result = await client.submitAndWait(signed.tx_blob)
+    const result = await submitAndWaitWithTimeout(client, signed.tx_blob)
 
     const meta = result.result.meta
     const engineResult = typeof meta === 'object' && meta !== null && 'TransactionResult' in meta
@@ -261,7 +319,7 @@ export async function signAndSubmitFromAddress(
       sequence: (prepared as Record<string, unknown>).Sequence as number ?? 0,
     }
   } finally {
-    await client.disconnect().catch(() => {})
+    releaseXrplClient()
   }
 }
 
@@ -301,7 +359,7 @@ export async function signTransaction(
       hash: signed.hash,
     }
   } finally {
-    await client.disconnect().catch(() => {})
+    releaseXrplClient()
   }
 }
 
